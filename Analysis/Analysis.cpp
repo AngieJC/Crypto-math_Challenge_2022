@@ -16,7 +16,7 @@ int main() {
 	cout << "输入要分析的轮数：";
 	cin >> r;
 
-	switch (r)
+	/*switch (r)
 	{
 	case 1:
 		analysis1Round();
@@ -26,10 +26,12 @@ int main() {
 		break;
 	default:
 		if (r > 2) {
-			analysisnRounds();
+			analysisnRounds(r);
 		}
 		break;
-	}
+	}*/
+
+	analysisnRounds(r);
 
 	return 0;
 }
