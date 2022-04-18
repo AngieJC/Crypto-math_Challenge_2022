@@ -65,10 +65,12 @@ void analysisnRounds(int r) {
 
 
 		/* 计算di和ei时涉及3个操作数，分别需要r*16个中间变量 */
-		vector<GRBVar> D(16 * r);
+		vector<GRBVar> D(14 * r);
 		vector<GRBVar> E(16 * r);
-		for (int i = 0; i < 16 * r; i++) {
+		for (int i = 0; i < 14; i++) {
 			D[i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+		}
+		for (int i = 0; i < 16 * r; i++) {
 			E[i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 		}
 
