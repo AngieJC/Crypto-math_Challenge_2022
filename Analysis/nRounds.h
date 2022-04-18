@@ -165,7 +165,7 @@ void analysisnRounds(int r) {
 			outfile.open("result.csv", ios::out | ios::app);
 			outfile << "K0, K1, K2, K3" << endl;
 			bitset<16> K0, K1, K2, K3;
-			char K0_c[8], K1_c[8], K2_c[8], K3_c[8];
+			char K0_c[6], K1_c[6], K2_c[6], K3_c[4];
 			for (int i = 0; i < solCount; i++) {
 				model.set(GRB_IntParam_SolutionNumber, i);
 				for (int j = 0; j < 16; j++) {
@@ -192,10 +192,10 @@ void analysisnRounds(int r) {
 						}
 					}
 				}
-				sprintf(K0_c, "%04X\t", K0);
-				sprintf(K1_c, "%04X\t", K1);
-				sprintf(K2_c, "%04X\t", K2);
-				sprintf(K3_c, "%04X\t", K3);
+				sprintf(K0_c, "%04X, ", K0);
+				sprintf(K1_c, "%04X, ", K1);
+				sprintf(K2_c, "%04X, ", K2);
+				sprintf(K3_c, "%04X", K3);
 				outfile << K0_c << ", " << K1_c << ", " << K2_c << ", " << K3_c << endl;
 			}
 			outfile.close();
