@@ -31,7 +31,9 @@ void analysisnRounds(int r) {
 	try {
 		// MILP环境
 		GRBEnv env = GRBEnv(true);
-		env.set("LogFile", "nRounds.log");
+		char logfile_str[32];
+		sprintf(logfile_str, "%dRounds.log", r);
+		env.set("LogFile", logfile_str);
 		env.set(GRB_DoubleParam_PoolGap, GRB_INFINITY);
 		env.start();
 
@@ -67,7 +69,7 @@ void analysisnRounds(int r) {
 		/* 计算di和ei时涉及3个操作数，分别需要r*16个中间变量 */
 		vector<GRBVar> D(14 * r);
 		vector<GRBVar> E(16 * r);
-		for (int i = 0; i < 14; i++) {
+		for (int i = 0; i < 14 * r; i++) {
 			D[i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 		}
 		for (int i = 0; i < 16 * r; i++) {
@@ -111,11 +113,11 @@ void analysisnRounds(int r) {
 					model.addConstr(X[i * 144 + 3 * 16 + j] == X[i * 144 + 2 * 16 + j]);
 				}
 				else {
-					model.addQConstr(D[(i - 1) * 16 + j] == X[i * 144 + 2 * 16 + j + 1] * X[i * 144 + 2 * 16 + j + 2]);
-					model.addConstr(X[i * 144 + 3 * 16 + j] >= D[(i - 1) * 16 + j] - X[i * 144 + 2 * 16 + j]);
-					model.addConstr(X[i * 144 + 3 * 16 + j] >= X[i * 144 + 2 * 16 + j] - D[(i - 1) * 16 + j]);
-					model.addConstr(X[i * 144 + 3 * 16 + j] <= D[(i - 1) * 16 + j] + X[i * 144 + 2 * 16 + j]);
-					model.addConstr(X[i * 144 + 3 * 16 + j] <= 2 - D[(i - 1) * 16 + j] - X[i * 144 + 2 * 16 + j]);
+					model.addQConstr(D[(i - 1) * 14 + j] == X[i * 144 + 2 * 16 + j + 1] * X[i * 144 + 2 * 16 + j + 2]);
+					model.addConstr(X[i * 144 + 3 * 16 + j] >= D[(i - 1) * 14 + j] - X[i * 144 + 2 * 16 + j]);
+					model.addConstr(X[i * 144 + 3 * 16 + j] >= X[i * 144 + 2 * 16 + j] - D[(i - 1) * 14 + j]);
+					model.addConstr(X[i * 144 + 3 * 16 + j] <= D[(i - 1) * 14 + j] + X[i * 144 + 2 * 16 + j]);
+					model.addConstr(X[i * 144 + 3 * 16 + j] <= 2 - D[(i - 1) * 14 + j] - X[i * 144 + 2 * 16 + j]);
 				}
 				// ei = (di <<< 3) + (di <<< 9) + (di <<< 14)
 				model.addConstr(E[(i - 1) * 16 + j] >= X[i * 144 + 3 * 16 + ((3 + j) % 16)] - X[i * 144 + 3 * 16 + ((9 + j) % 16)]);
@@ -164,7 +166,10 @@ void analysisnRounds(int r) {
 		int solCount = model.get(GRB_IntAttr_SolCount);
 		if (solCount > 0) {
 			ofstream outfile;
-			outfile.open(r + "RoundResult.csv", ios::out | ios::app);
+			char outfile_str[32];
+			sprintf(outfile_str, "%dRoundResult.csv", r);
+			remove(outfile_str);
+			outfile.open(outfile_str, ios::out | ios::app);
 			outfile << "K0, K1, K2, K3" << endl;
 			bitset<16> K0, K1, K2, K3;
 			char K0_c[8], K1_c[8], K2_c[8], K3_c[8];
@@ -194,11 +199,15 @@ void analysisnRounds(int r) {
 						}
 					}
 				}
-				sprintf(K0_c, "%04X, ", K0);
-				sprintf(K1_c, "%04X, ", K1);
-				sprintf(K2_c, "%04X, ", K2);
+				sprintf(K0_c, "%04X", K0);
+				sprintf(K1_c, "%04X", K1);
+				sprintf(K2_c, "%04X", K2);
 				sprintf(K3_c, "%04X", K3);
 				outfile << K0_c << ", " << K1_c << ", " << K2_c << ", " << K3_c << endl;
+				memset(K0_c, 0, sizeof(char) * 8);
+				memset(K1_c, 0, sizeof(char) * 8);
+				memset(K2_c, 0, sizeof(char) * 8);
+				memset(K3_c, 0, sizeof(char) * 8);
 			}
 			outfile.close();
 		}

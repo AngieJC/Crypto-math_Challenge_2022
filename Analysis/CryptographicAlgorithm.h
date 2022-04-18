@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define TOTALROUND 1024//注：本算法不设置最高轮数，以攻击的轮数进行评分。此处以40为例，可更改
+#define TOTALROUND 65535//注：本算法不设置最高轮数，以攻击的轮数进行评分。此处以40为例，可更改
 #define u16 uint16_t
 #define LCS(x,a) ((x)<<a ^ (x) >> (16-a))//将16比特串循环左移a位
 
