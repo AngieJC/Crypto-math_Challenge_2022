@@ -46,20 +46,20 @@ void analysisnRounds(int r) {
 		}
 		// K_i+4 = ~K_i + i
 		for (int j = 4 * 16; j < ((int)(r / 2) + r % 2) * 16; j += 16) {
-			bitset<16> i = (j % 16) - 4;
+			bitset<16> i = (int)(j / 16) - 4;
 			for (int k = 0; k < 16; k++) {
-				model.addConstr(K[j + k] == (1 - K[j - 4 * 16 + k]) + (int)i[k]);
+				model.addConstr(K[j + k] == (1 - K[j - 4 * 16 + k]) + (int)i[15 - k]);
 			}
 		}
 
 		vector<GRBVar> X(144 * (r + 1));
 		// L0, R0共32个变量，明文约束
 		bitset<16> L0_bit = L0, R0_bit = R0;
-		for (int i = 15; i >= 0; i--) { // 为保持结构一致，方便编码，初始变量中前7*16个位置并没有意义，只是占位
-			X[7 * 16 + 15 - i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
-			model.addConstr(X[7 * 16 + 15 - i] == (int)L0_bit[i]);
-			X[8 * 16 + 15 - i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
-			model.addConstr(X[8 * 16 + 15 - i] == (int)R0_bit[i]);
+		for (int i = 0; i < 16; i++) { // 为保持结构一致，方便编码，初始变量中前7*16个位置并没有意义，只是占位
+			X[7 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(X[7 * 16 + i] == (int)L0_bit[15 - i]);
+			X[8 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(X[8 * 16 + i] == (int)R0_bit[15 - i]);
 		}
 
 
@@ -94,35 +94,35 @@ void analysisnRounds(int r) {
 				// ai = L_i-1 & RK_i-1
 				model.addQConstr(X[i * 144 + 0 * 16 + j] == X[7 * 16 + (i - 1) * 144 + j] * X[i * 144 + 96 + j]);
 				// bi = R_i-1 + (i - 1)
-				model.addConstr(X[i * 144 + 1 * 16 + j] >= X[8 * 16 + (i - 1) * 144 + j] - i_1[j]);
-				model.addConstr(X[i * 144 + 1 * 16 + j] >= i_1[j] - X[8 * 16 + (i - 1) * 144 + j]);
-				model.addConstr(X[i * 144 + 1 * 16 + j] <= X[8 * 16 + (i - 1) * 144 + j] + i_1[j]);
-				model.addConstr(X[i * 144 + 1 * 16 + j] <= 2 - X[8 * 16 + (i - 1) * 144 + j] - (int)i_1[j]);
+				model.addConstr(X[i * 144 + 1 * 16 + j] >= X[8 * 16 + (i - 1) * 144 + j] - i_1[15 - j]);
+				model.addConstr(X[i * 144 + 1 * 16 + j] >= i_1[15 - j] - X[8 * 16 + (i - 1) * 144 + j]);
+				model.addConstr(X[i * 144 + 1 * 16 + j] <= X[8 * 16 + (i - 1) * 144 + j] + i_1[15 - j]);
+				model.addConstr(X[i * 144 + 1 * 16 + j] <= 2 - X[8 * 16 + (i - 1) * 144 + j] - (int)i_1[15 - j]);
 				// ci = ai + bi
 				model.addConstr(X[i * 144 + 2 * 16 + j] >= X[i * 144 + 1 * 16 + j] - X[i * 144 + 0 * 16 + j]);
 				model.addConstr(X[i * 144 + 2 * 16 + j] >= X[i * 144 + 0 * 16 + j] - X[i * 144 + 1 * 16 + j]);
 				model.addConstr(X[i * 144 + 2 * 16 + j] <= X[i * 144 + 1 * 16 + j] + X[i * 144 + 0 * 16 + j]);
 				model.addConstr(X[i * 144 + 2 * 16 + j] <= 2 - X[i * 144 + 1 * 16 + j] - X[i * 144 + 0 * 16 + j]);
 				// di = ((ci << 2) & ((ci << 1) + ci
-				if (j < 2) {
+				if (j > 13) {
 					model.addConstr(X[i * 144 + 3 * 16 + j] == X[i * 144 + 2 * 16 + j]);
 				}
 				else {
-					model.addQConstr(D[(i - 1) * 16 + j] == X[i * 144 + 2 * 16 + j - 1] * X[i * 144 + 2 * 16 + j - 2]);
+					model.addQConstr(D[(i - 1) * 16 + j] == X[i * 144 + 2 * 16 + j + 1] * X[i * 144 + 2 * 16 + j + 2]);
 					model.addConstr(X[i * 144 + 3 * 16 + j] >= D[(i - 1) * 16 + j] - X[i * 144 + 2 * 16 + j]);
 					model.addConstr(X[i * 144 + 3 * 16 + j] >= X[i * 144 + 2 * 16 + j] - D[(i - 1) * 16 + j]);
 					model.addConstr(X[i * 144 + 3 * 16 + j] <= D[(i - 1) * 16 + j] + X[i * 144 + 2 * 16 + j]);
 					model.addConstr(X[i * 144 + 3 * 16 + j] <= 2 - D[(i - 1) * 16 + j] - X[i * 144 + 2 * 16 + j]);
 				}
 				// ei = (di <<< 3) + (di <<< 9) + (di <<< 14)
-				model.addConstr(E[(i - 1) * 16 + j] >= X[i * 144 + 3 * 16 + ((16 - 3 + j) % 16)] + X[i * 144 + 3 * 16 + ((16 - 9 + j) % 16)]);
-				model.addConstr(E[(i - 1) * 16 + j] >= X[i * 144 + 3 * 16 + ((16 - 9 + j) % 16)] - X[i * 144 + 3 * 16 + ((16 - 3 + j) % 16)]);
-				model.addConstr(E[(i - 1) * 16 + j] <= X[i * 144 + 3 * 16 + ((16 - 3 + j) % 16)] + X[i * 144 + 3 * 16 + ((16 - 9 + j) % 16)]);
-				model.addConstr(E[(i - 1) * 16 + j] <= 2 - X[i * 144 + 3 * 16 + ((16 - 3 + j) % 16)] - X[i * 144 + 3 * 16 + ((16 - 9 + j) % 16)]);
-				model.addConstr(X[i * 144 + 4 * 16 + j] >= E[(i - 1) * 16 + j] - X[i * 144 + 3 * 16 + ((16 - 14 + j) % 16)]);
-				model.addConstr(X[i * 144 + 4 * 16 + j] >= X[i * 144 + 3 * 16 + ((16 - 14 + j) % 16)] - E[(i - 1) * 16 + j]);
-				model.addConstr(X[i * 144 + 4 * 16 + j] <= E[(i - 1) * 16 + j] + X[i * 144 + 3 * 16 + ((16 - 14 + j) % 16)]);
-				model.addConstr(X[i * 144 + 4 * 16 + j] <= 2 - E[(i - 1) * 16 + j] - X[i * 144 + 3 * 16 + ((16 - 14 + j) % 16)]);
+				model.addConstr(E[(i - 1) * 16 + j] >= X[i * 144 + 3 * 16 + ((3 + j) % 16)] - X[i * 144 + 3 * 16 + ((9 + j) % 16)]);
+				model.addConstr(E[(i - 1) * 16 + j] >= X[i * 144 + 3 * 16 + ((9 + j) % 16)] - X[i * 144 + 3 * 16 + ((3 + j) % 16)]);
+				model.addConstr(E[(i - 1) * 16 + j] <= X[i * 144 + 3 * 16 + ((3 + j) % 16)] + X[i * 144 + 3 * 16 + ((9 + j) % 16)]);
+				model.addConstr(E[(i - 1) * 16 + j] <= 2 - X[i * 144 + 3 * 16 + ((3 + j) % 16)] - X[i * 144 + 3 * 16 + ((9 + j) % 16)]);
+				model.addConstr(X[i * 144 + 4 * 16 + j] >= E[(i - 1) * 16 + j] - X[i * 144 + 3 * 16 + ((14 + j) % 16)]);
+				model.addConstr(X[i * 144 + 4 * 16 + j] >= X[i * 144 + 3 * 16 + ((14 + j) % 16)] - E[(i - 1) * 16 + j]);
+				model.addConstr(X[i * 144 + 4 * 16 + j] <= E[(i - 1) * 16 + j] + X[i * 144 + 3 * 16 + ((14 + j) % 16)]);
+				model.addConstr(X[i * 144 + 4 * 16 + j] <= 2 - E[(i - 1) * 16 + j] - X[i * 144 + 3 * 16 + ((14 + j) % 16)]);
 				// fi = ei & RK_i-1
 				model.addQConstr(X[i * 144 + 5 * 16 + j] == X[i * 144 + 4 * 16 + j] * X[i * 144 + 96 + j]);
 				// Li = fi + R_i-1
@@ -142,11 +142,17 @@ void analysisnRounds(int r) {
 		// Lr|Rr = c
 		bitset<16> Lr_bit = Lr, Rr_bit = Rr;
 		for (int i = 15; i >= 0; i--) {
-			model.addConstr(X[144 * r + 7 * 16 + 15 - i] == (int)Lr_bit[i]);
-			model.addConstr(X[144 * r + 8 * 16 + 15 - i] == (int)Rr_bit[i]);
+			model.addConstr(X[144 * r + 7 * 16 + i] == (int)Lr_bit[15 - i]);
+			model.addConstr(X[144 * r + 8 * 16 + i] == (int)Rr_bit[15 - i]);
 		}
 
 		// 求解
+		model.set(GRB_DoubleParam_MIPGap, GRB_INFINITY);
+		model.set(GRB_IntParam_PoolSearchMode, 2);
+		model.set(GRB_IntParam_PoolSolutions, 2000000000);
+		model.set(GRB_IntParam_RINS, 0);
+		model.set(GRB_IntParam_MIPFocus, 3);
+		model.set(GRB_IntParam_VarBranch, 2);
 		model.write("nRounds.lp");
 		auto start = high_resolution_clock::now();
 		model.optimize();
@@ -154,37 +160,38 @@ void analysisnRounds(int r) {
 
 		int solCount = model.get(GRB_IntAttr_SolCount);
 		if (solCount > 0) {
-			for(int i = 0; i < solCount; i++)
-			model.set(GRB_IntParam_SolutionNumber, i);
-			bitset<16> K0, K1, K2, K3;
-			for (int j = 0; j < 16; j++) {
-				K0[15 - j] = 0;
-				K0[16 + 15 - j] = 0;
-				K0[16 * 2 + 15 - j] = 0;
-				K0[16 * 3 + 15 - j] = 0;
-				if (K[j].get(GRB_DoubleAttr_Xn) > 0.5) {
-					K0[15 - j] = 1;
-				}
-				if (r > 2) {
-					if (K[16 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
-						K0[16 + 15 - j] = 1;
+			for (int i = 0; i < solCount; i++) {
+				model.set(GRB_IntParam_SolutionNumber, i);
+				bitset<16> K0, K1, K2, K3;
+				for (int j = 0; j < 16; j++) {
+					K0[15 - j] = 0;
+					K1[15 - j] = 0;
+					K2[15 - j] = 0;
+					K3[15 - j] = 0;
+					if (K[j].get(GRB_DoubleAttr_Xn) > 0.5) {
+						K0[15 - j] = 1;
 					}
-					if (r > 4) {
-						if (K[16 * 2 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
-							K0[16 * 2 + 15 - j] = 1;
+					if (r > 2) {
+						if (K[16 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
+							K1[15 - j] = 1;
 						}
-						if (r > 8) {
-							if (K[16 * 3 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
-								K0[16 * 3 + 15 - j] = 1;
+						if (r > 4) {
+							if (K[16 * 2 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
+								K2[15 - j] = 1;
+							}
+							if (r > 6) {
+								if (K[16 * 3 + j].get(GRB_DoubleAttr_Xn) > 0.5) {
+									K3[15 - j] = 1;
+								}
 							}
 						}
 					}
 				}
+				printf("K0：0X%04X\t", K0);
+				printf("K1：0X%04X\t", K1);
+				printf("K2：0X%04X\t", K2);
+				printf("K3：0X%04X\t\n", K3);
 			}
-			printf("K0：0X%04X\t", K0);
-			printf("K1：0X%04X\t", K1);
-			printf("K2：0X%04X\t", K2);
-			printf("K3：0X%04X\t\n", K3);
 		}
 
 		auto duration = duration_cast<microseconds>(stop - start);
