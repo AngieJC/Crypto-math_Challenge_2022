@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <vector>
 #include <map>
@@ -153,16 +154,20 @@ void analysisnRounds(int r) {
 		model.set(GRB_IntParam_RINS, 0);
 		model.set(GRB_IntParam_MIPFocus, 3);
 		model.set(GRB_IntParam_VarBranch, 2);
-		model.write("nRounds.lp");
+		// model.write("nRounds.lp");
 		auto start = high_resolution_clock::now();
 		model.optimize();
 		auto stop = high_resolution_clock::now();
 
 		int solCount = model.get(GRB_IntAttr_SolCount);
 		if (solCount > 0) {
+			ofstream outfile;
+			outfile.open("result.csv", ios::out | ios::app);
+			outfile << "K0, K1, K2, K3" << endl;
+			bitset<16> K0, K1, K2, K3;
+			char K0_c[8], K1_c[8], K2_c[8], K3_c[8];
 			for (int i = 0; i < solCount; i++) {
 				model.set(GRB_IntParam_SolutionNumber, i);
-				bitset<16> K0, K1, K2, K3;
 				for (int j = 0; j < 16; j++) {
 					K0[15 - j] = 0;
 					K1[15 - j] = 0;
@@ -187,11 +192,13 @@ void analysisnRounds(int r) {
 						}
 					}
 				}
-				printf("K0£º0X%04X\t", K0);
-				printf("K1£º0X%04X\t", K1);
-				printf("K2£º0X%04X\t", K2);
-				printf("K3£º0X%04X\t\n", K3);
+				sprintf(K0_c, "%04X\t", K0);
+				sprintf(K1_c, "%04X\t", K1);
+				sprintf(K2_c, "%04X\t", K2);
+				sprintf(K3_c, "%04X\t", K3);
+				outfile << K0_c << ", " << K1_c << ", " << K2_c << ", " << K3_c << endl;
 			}
+			outfile.close();
 		}
 
 		auto duration = duration_cast<microseconds>(stop - start);
