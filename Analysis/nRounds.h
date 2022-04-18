@@ -162,7 +162,7 @@ void analysisnRounds(int r) {
 		int solCount = model.get(GRB_IntAttr_SolCount);
 		if (solCount > 0) {
 			ofstream outfile;
-			outfile.open("result.csv", ios::out | ios::app);
+			outfile.open(r + "RoundResult.csv", ios::out | ios::app);
 			outfile << "K0, K1, K2, K3" << endl;
 			bitset<16> K0, K1, K2, K3;
 			char K0_c[6], K1_c[6], K2_c[6], K3_c[4];
