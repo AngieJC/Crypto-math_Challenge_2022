@@ -1,21 +1,21 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <stdio.h>
 
 using namespace std;
 
 void analysis1Round() {
-	cout << "Ñ¡ÔñÃ÷ÎÄÎª£ºL0=0, R0=DEC(46811)=HEX(B6DB)" << endl << "ÊäÈëÃÜÎÄ(Ê®Áù½øÖÆ)£º";
+	cout << "é€‰æ‹©æ˜æ–‡ä¸ºï¼šL0=0, R0=DEC(46811)=HEX(B6DB)" << endl << "è¾“å…¥å¯†æ–‡(åå…­è¿›åˆ¶)ï¼š";
 	uint32_t c = 0;
 	cin.setf(ios_base::hex, ios_base::basefield);
 	cin >> c;
 
-	// ½«c²ğ³ÉÁ½²¿·Ö
+	// å°†cæ‹†æˆä¸¤éƒ¨åˆ†
 	uint16_t R0 = 46811, L1 = 0;
 	memcpy(&L1, ((uint8_t*)&c) + 2, 2);
 
 	uint16_t RK0AndT_13 = L1 ^ R0;
-	printf("ÃÜÔ¿K0£º0X%04X\n", RK0AndT_13);
+	printf("å¯†é’¥K0ï¼š0X%04X\n", RK0AndT_13);
 
 	return;
 }

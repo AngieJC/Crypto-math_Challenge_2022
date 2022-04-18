@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -19,28 +19,28 @@ using namespace std::chrono;
 void analysisnRounds(int r) {
 	uint16_t L0 = 0, R0 = 0, Lr = 0, Rr = 0;
 	uint32_t c = 0;
-	cout << "ÊäÈëpt[0], pt[1](Ê®Áù½øÖÆ)£º";
+	cout << "è¾“å…¥pt[0], pt[1](åå…­è¿›åˆ¶)ï¼š";
 	cin.setf(ios_base::hex, ios_base::basefield);
 	cin >> L0 >> R0;
-	cout << "ÊäÈëÃÜÎÄ(Ê®Áù½øÖÆ)£º";
+	cout << "è¾“å…¥å¯†æ–‡(åå…­è¿›åˆ¶)ï¼š";
 	cin >> c;
-	// ½«ÃÜÎÄ²ğ½â³ÉLrºÍRr
+	// å°†å¯†æ–‡æ‹†è§£æˆLrå’ŒRr
 	memcpy(&Rr, ((uint16_t*)&c), 2);
 	memcpy(&Lr, ((uint16_t*)&c + 1), 2);
 
 	try {
-		// MILP»·¾³
+		// MILPç¯å¢ƒ
 		GRBEnv env = GRBEnv(true);
 		env.set("LogFile", "nRounds.log");
 		env.set(GRB_DoubleParam_PoolGap, GRB_INFINITY);
 		env.start();
 
-		// ´´½¨¿ÕÄ£ĞÍ
+		// åˆ›å»ºç©ºæ¨¡å‹
 		GRBModel model = GRBModel(env);
 
-		/* ³õÊ¼±äÁ¿ */
-		// ÃÜÔ¿À©Õ¹
-		// ¶ÔÓÚrÂÖ¼ÓÃÜ£¬¹²ĞèÒª(int)(r / 2) + r % 2¸öK
+		/* åˆå§‹å˜é‡ */
+		// å¯†é’¥æ‰©å±•
+		// å¯¹äºrè½®åŠ å¯†ï¼Œå…±éœ€è¦(int)(r / 2) + r % 2ä¸ªK
 		vector<GRBVar> K(((int)(r / 2) + r % 2) * 16);
 		for (int i = 0; i < ((int)(r / 2) + r % 2) * 16; i++) {
 			K[i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
@@ -54,9 +54,9 @@ void analysisnRounds(int r) {
 		}
 
 		vector<GRBVar> X(144 * (r + 1));
-		// L0, R0¹²32¸ö±äÁ¿£¬Ã÷ÎÄÔ¼Êø
+		// L0, R0å…±32ä¸ªå˜é‡ï¼Œæ˜æ–‡çº¦æŸ
 		bitset<16> L0_bit = L0, R0_bit = R0;
-		for (int i = 0; i < 16; i++) { // Îª±£³Ö½á¹¹Ò»ÖÂ£¬·½±ã±àÂë£¬³õÊ¼±äÁ¿ÖĞÇ°7*16¸öÎ»ÖÃ²¢Ã»ÓĞÒâÒå£¬Ö»ÊÇÕ¼Î»
+		for (int i = 0; i < 16; i++) { // ä¸ºä¿æŒç»“æ„ä¸€è‡´ï¼Œæ–¹ä¾¿ç¼–ç ï¼Œåˆå§‹å˜é‡ä¸­å‰7*16ä¸ªä½ç½®å¹¶æ²¡æœ‰æ„ä¹‰ï¼Œåªæ˜¯å ä½
 			X[7 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 			model.addConstr(X[7 * 16 + i] == (int)L0_bit[15 - i]);
 			X[8 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
@@ -64,7 +64,7 @@ void analysisnRounds(int r) {
 		}
 
 
-		/* ¼ÆËãdiºÍeiÊ±Éæ¼°3¸ö²Ù×÷Êı£¬·Ö±ğĞèÒªr*16¸öÖĞ¼ä±äÁ¿ */
+		/* è®¡ç®—diå’Œeiæ—¶æ¶‰åŠ3ä¸ªæ“ä½œæ•°ï¼Œåˆ†åˆ«éœ€è¦r*16ä¸ªä¸­é—´å˜é‡ */
 		vector<GRBVar> D(16 * r);
 		vector<GRBVar> E(16 * r);
 		for (int i = 0; i < 16 * r; i++) {
@@ -73,22 +73,22 @@ void analysisnRounds(int r) {
 		}
 
 
-		/* Ã¿ÂÖ±äÁ¿ */
+		/* æ¯è½®å˜é‡ */
 		bitset<16> i_1;
 		for (int i = 1; i <= r; i++) {
 			i_1 = i - 1;
-			// ±¾ÂÖ´ÎÖĞMILP±äÁ¿µÄÆğÊ¼±àÂëÎªi*144
-			// ai, bi, ci, di, ei, fi, RK_i-1, Li, Ri¹²144¸ö±äÁ¿
+			// æœ¬è½®æ¬¡ä¸­MILPå˜é‡çš„èµ·å§‹ç¼–ç ä¸ºi*144
+			// ai, bi, ci, di, ei, fi, RK_i-1, Li, Riå…±144ä¸ªå˜é‡
 			for (int j = 0; j < 144; j++) {
 				X[i * 144 + j] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 			}
 
 			for (int j = 0; j < 16; j++) {
 				// RK_2i = K_i, RK_2i+1 = ~K_i
-				if (i % 2 == 1) { // ÆæÊıÂÖ£¬RK_2i = K_i
+				if (i % 2 == 1) { // å¥‡æ•°è½®ï¼ŒRK_2i = K_i
 					model.addConstr(X[i * 144 + 96 + j] == K[((int)((i - 1) / 2)) * 16 + j]);
 				}
-				else // Å¼ÊıÂÖ£¬RK_2i+1 = ~K_i
+				else // å¶æ•°è½®ï¼ŒRK_2i+1 = ~K_i
 				{
 					model.addConstr(X[i * 144 + 96 + j] == 1 - K[((int)(i / 2) - 1) * 16 + j]);
 				}
@@ -139,7 +139,7 @@ void analysisnRounds(int r) {
 			}
 		}
 
-		/* ÃÜÎÄÔ¼Êø */
+		/* å¯†æ–‡çº¦æŸ */
 		// Lr|Rr = c
 		bitset<16> Lr_bit = Lr, Rr_bit = Rr;
 		for (int i = 15; i >= 0; i--) {
@@ -147,7 +147,7 @@ void analysisnRounds(int r) {
 			model.addConstr(X[144 * r + 8 * 16 + i] == (int)Rr_bit[15 - i]);
 		}
 
-		// Çó½â
+		// æ±‚è§£
 		model.set(GRB_DoubleParam_MIPGap, GRB_INFINITY);
 		model.set(GRB_IntParam_PoolSearchMode, 2);
 		model.set(GRB_IntParam_PoolSolutions, 2000000000);
@@ -205,11 +205,11 @@ void analysisnRounds(int r) {
 		cout << "Time: " << duration.count() / 1000000 << "s" << endl;
 	}
 	catch (GRBException e) {
-		cout << "Gurobi´íÎóÂë£º" << e.getErrorCode() << endl;
+		cout << "Gurobié”™è¯¯ç ï¼š" << e.getErrorCode() << endl;
 		cout << e.getMessage() << endl;
 	}
 	catch (...) {
-		cout << "Î´Öª´íÎó" << endl;
+		cout << "æœªçŸ¥é”™è¯¯" << endl;
 	}
 	
 

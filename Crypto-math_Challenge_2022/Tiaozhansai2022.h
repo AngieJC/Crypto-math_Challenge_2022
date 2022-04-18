@@ -1,25 +1,25 @@
-#pragma once
+ï»¿#pragma once
 /***********************************************************
-È«¹ú¸ßÐ£ÃÜÂëÌôÕ½Èü£º·Ö×éÃÜÂëÃÜÔ¿»Ö¸´ÎÊÌâ
-JËã·¨²âÊÔÏòÁ¿
-´úÂëÐÞ¸ÄÊ±¼ä£º2022-1-10
+å…¨å›½é«˜æ ¡å¯†ç æŒ‘æˆ˜èµ›ï¼šåˆ†ç»„å¯†ç å¯†é’¥æ¢å¤é—®é¢˜
+Jç®—æ³•æµ‹è¯•å‘é‡
+ä»£ç ä¿®æ”¹æ—¶é—´ï¼š2022-1-10
 ************************************************************/
 /***********************************************************
-×¢£ºËã·¨ÊµÏÖÒÔ16±ÈÌØÎª»ù±¾Êý¾Ýµ¥Ôª£¨u16£©;
-Ã÷ÎÄ¡¢ÃÜÎÄÎª2¸öu16¹¹³ÉµÄÊý×épt[2]£¬ct[2]£¬ÆäÖÐ×óÖ§ÎªArr[0],ÓÒÖ§ÎªArr[1];
-ÖÖ×ÓÃÜÔ¿Îª4¸öu16¹¹³ÉµÄÊý×éseedkey[4]£¬ÆäÖÐseedkey[i]=K[i],0<=i<=3.
+æ³¨ï¼šç®—æ³•å®žçŽ°ä»¥16æ¯”ç‰¹ä¸ºåŸºæœ¬æ•°æ®å•å…ƒï¼ˆu16ï¼‰;
+æ˜Žæ–‡ã€å¯†æ–‡ä¸º2ä¸ªu16æž„æˆçš„æ•°ç»„pt[2]ï¼Œct[2]ï¼Œå…¶ä¸­å·¦æ”¯ä¸ºArr[0],å³æ”¯ä¸ºArr[1];
+ç§å­å¯†é’¥ä¸º4ä¸ªu16æž„æˆçš„æ•°ç»„seedkey[4]ï¼Œå…¶ä¸­seedkey[i]=K[i],0<=i<=3.
 *************************************************************/
 // #include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
 
-#define TOTALROUND 1024//×¢£º±¾Ëã·¨²»ÉèÖÃ×î¸ßÂÖÊý£¬ÒÔ¹¥»÷µÄÂÖÊý½øÐÐÆÀ·Ö¡£´Ë´¦ÒÔ40ÎªÀý£¬¿É¸ü¸Ä
+#define TOTALROUND 1024//æ³¨ï¼šæœ¬ç®—æ³•ä¸è®¾ç½®æœ€é«˜è½®æ•°ï¼Œä»¥æ”»å‡»çš„è½®æ•°è¿›è¡Œè¯„åˆ†ã€‚æ­¤å¤„ä»¥40ä¸ºä¾‹ï¼Œå¯æ›´æ”¹
 #define u16 uint16_t
-#define LCS(x,a) ((x)<<a ^ (x) >> (16-a))//½«16±ÈÌØ´®Ñ­»·×óÒÆaÎ»
+#define LCS(x,a) ((x)<<a ^ (x) >> (16-a))//å°†16æ¯”ç‰¹ä¸²å¾ªçŽ¯å·¦ç§»aä½
 
 
 
-void KeySchedual(u16 seedkey[], u16 roundkey[])//ÃÜÔ¿À©Õ¹Ëã·¨
+void KeySchedual(u16 seedkey[], u16 roundkey[])//å¯†é’¥æ‰©å±•ç®—æ³•
 {
 	int idx;
 
@@ -44,7 +44,7 @@ void KeySchedual(u16 seedkey[], u16 roundkey[])//ÃÜÔ¿À©Õ¹Ëã·¨
 #endif
 }
 
-void RoundFun(u16 s[], u16 roundkey[], int round)//ÂÖº¯Êý,sÎªÊäÈë×´Ì¬£¬roundkeyÎªÂÖÃÜÔ¿£¬roundÎªµ±Ç°ÂÖ±àºÅ£¨´Ó0¿ªÊ¼¼Ç£©
+void RoundFun(u16 s[], u16 roundkey[], int round)//è½®å‡½æ•°,sä¸ºè¾“å…¥çŠ¶æ€ï¼Œroundkeyä¸ºè½®å¯†é’¥ï¼Œroundä¸ºå½“å‰è½®ç¼–å·ï¼ˆä»Ž0å¼€å§‹è®°ï¼‰
 {
 	u16 temp, Li, Ri;
 
@@ -58,7 +58,7 @@ void RoundFun(u16 s[], u16 roundkey[], int round)//ÂÖº¯Êý,sÎªÊäÈë×´Ì¬£¬roundkeyÎ
 	s[1] = Ri;
 }
 
-void Enc(u16 pt[], u16 ct[], u16 seedkey[], int round)//¼ÓÃÜº¯Êý£¬ptÎªÃ÷ÎÄ£¬ctÎªÃÜÎÄ£¬seedkeyÎªÖÖ×ÓÃÜÔ¿£¬roundÎª×ÜÂÖÊý
+void Enc(u16 pt[], u16 ct[], u16 seedkey[], int round)//åŠ å¯†å‡½æ•°ï¼Œptä¸ºæ˜Žæ–‡ï¼Œctä¸ºå¯†æ–‡ï¼Œseedkeyä¸ºç§å­å¯†é’¥ï¼Œroundä¸ºæ€»è½®æ•°
 {
 	u16 s[2];
 	u16 roundkey[TOTALROUND];
@@ -66,7 +66,7 @@ void Enc(u16 pt[], u16 ct[], u16 seedkey[], int round)//¼ÓÃÜº¯Êý£¬ptÎªÃ÷ÎÄ£¬ctÎª
 
 	if (round > TOTALROUND)
 	{
-		printf("error: ÃÜÔ¿À©Õ¹ÂÖÊýÐ¡ÓÚ×ÜÂÖÊý£¬Çë¸ü¸ÄÍ·ÎÄ¼þµÚ15ÐÐÊ¹TOTALROUNDµÄÖµ´óÓÚ×ÜÂÖÊý\n");
+		printf("error: å¯†é’¥æ‰©å±•è½®æ•°å°äºŽæ€»è½®æ•°ï¼Œè¯·æ›´æ”¹å¤´æ–‡ä»¶ç¬¬15è¡Œä½¿TOTALROUNDçš„å€¼å¤§äºŽæ€»è½®æ•°\n");
 		return;
 	}
 

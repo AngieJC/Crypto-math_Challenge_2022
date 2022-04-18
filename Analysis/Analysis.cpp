@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 * Author:	AngieJC
 * Mail:		htk90uggk@outlook.com
 */
@@ -14,7 +14,7 @@ using namespace std;
 
 int main() {
 	int r = 0;
-	cout << "ÊäÈëÒª·ÖÎöµÄÂÖÊý£º";
+	cout << "è¾“å…¥è¦åˆ†æžçš„è½®æ•°ï¼š";
 	cin >> r;
 
 	/*switch (r)
