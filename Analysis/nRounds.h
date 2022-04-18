@@ -165,7 +165,7 @@ void analysisnRounds(int r) {
 			outfile.open(r + "RoundResult.csv", ios::out | ios::app);
 			outfile << "K0, K1, K2, K3" << endl;
 			bitset<16> K0, K1, K2, K3;
-			char K0_c[6], K1_c[6], K2_c[6], K3_c[4];
+			char K0_c[8], K1_c[8], K2_c[8], K3_c[8];
 			for (int i = 0; i < solCount; i++) {
 				model.set(GRB_IntParam_SolutionNumber, i);
 				for (int j = 0; j < 16; j++) {
