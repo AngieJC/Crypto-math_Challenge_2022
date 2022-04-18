@@ -146,10 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="1-4RoundsAccurate.h" />
     <ClInclude Include="1Round.h" />
     <ClInclude Include="2Rounds.h" />
     <ClInclude Include="CryptographicAlgorithm.h" />
-    <ClInclude Include="nRounds.h" />
+    <ClInclude Include="1-4Rounds.h" />
     <ClInclude Include="Rounds.h" />
   </ItemGroup>
   <ItemGroup>

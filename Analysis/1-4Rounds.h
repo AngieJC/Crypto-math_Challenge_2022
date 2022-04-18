@@ -16,7 +16,7 @@
 using namespace std;
 using namespace std::chrono;
 
-void analysisnRounds(int r) {
+void analysis1_4Rounds(int r) {
 	uint16_t L0 = 0, R0 = 0, Lr = 0, Rr = 0;
 	uint32_t c = 0;
 	cout << "输入pt[0], pt[1](十六进制)：";
