@@ -46,6 +46,7 @@ class Jdiff_SolFileParser:
             aftRk2 = Jdiff.genVars_aftRk2_Round(i-1)
             Lout = Jdiff.genVars_Round(i)[0:16]
             Rout = Jdiff.genVars_Round(i)[16:32]
+            
             print('leftIn      ',end=' ')
             self.printValue(Lin)
             print('rightIn     ',end=' ')
@@ -97,8 +98,9 @@ class Jdiff_SolFileParser:
             self.printValue(Lout)
             '''
 def main():
-    sol = Jdiff_SolFileParser("Jdiff_5r.sol")
-    sol.Jdiff_get_intermediates_to_Round(5)
+    r = 8
+    sol = Jdiff_SolFileParser("Jdiff_" + str(r) + "r.sol")
+    sol.Jdiff_get_intermediates_to_Round(r)
 
 if __name__=='__main__':
     main()

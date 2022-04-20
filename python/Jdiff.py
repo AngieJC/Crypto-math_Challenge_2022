@@ -1,10 +1,11 @@
-# add constraints of key in one round &
-# between 2 adjacent rounds &
+# add constraints before and after &RK in one round &
+# between 2 adjacent rounds with same subK &
 # between 2 rounds with interval of 8
 # at 2022/04/20
 # by AngieJC
 # htk90uggk@outlook.com
 
+from operator import mod
 from BasicTools import *
 from ConstraintGenerator import *
 
@@ -35,8 +36,8 @@ xor3_diff_pattern=[(1, -1, 1, 1, 0),\
 (1, 1, 1, -1, 0),\
 (1, 1, -1, 1, 0)]
 
-andRK_1r_diff = set([(1, 0, 0, 0),(1, 0, 1, 0),(1, 1, 1, 1),(1, 1, 0, 0),(0, 0, 1, 0),(0, 0, 1, 1),(0, 0, 0, 0)])
-andRK_1r_diff_pattern = [(1, -1, 0, 0, 0),\
+andSameRK_diff = set([(1, 0, 0, 0),(1, 0, 1, 0),(1, 1, 1, 1),(1, 1, 0, 0),(0, 0, 1, 0),(0, 0, 1, 1),(0, 0, 0, 0)])
+andSameRK_diff_pattern = [(1, -1, 0, 0, 0),\
 (0, 0, 1, -1, 0),\
 (0, 1, 0, 0, 0),\
 (0, 0, 0, 1, 0),\
@@ -44,6 +45,16 @@ andRK_1r_diff_pattern = [(1, -1, 0, 0, 0),\
 (0, -1, -1, 1, 1),\
 (0, 0, -1, 0, 1),\
 (-1, 1, 0, -1, 1)]
+
+andDiffRK_diff = set([(1, 0, 1, 1),(1, 0, 0, 0),(1, 1, 0, 0),(1, 1, 1, 0),(0, 0, 1, 1),(0, 0, 1, 0),(0, 0, 0, 0)])
+andInveRK_diff_pattern = [(0, 0, 0, 1, 0),\
+(1, -1, 0, 0, 0),\
+(0, 1, 0, 0, 0),\
+(0, 0, 1, -1, 0),\
+(0, -1, 0, -1, 1),\
+(-1, 0, 0, 0, 1),\
+(-1, 1, -1, 1, 1),\
+(0, 0, -1, 0, 1)]
 
 class Jdiff:
     def genVars_Round(r):
@@ -74,6 +85,12 @@ class Jdiff:
         return ['ActRK2_'+str(r)+'r_'+str(i) for i in range(16)]
     def genVars_Act_S_Round(r):
         return ['ActS_'+str(r)+'r_'+str(i) for i in range(14)]
+    
+    def get_bit_val(byte, index):
+        if (byte[0] & (1 << index).to_bytes(2, byteorder='big')[0]) + (byte[1] & (1 << index).to_bytes(2, byteorder='big')[1]):
+            return 1
+        else:
+            return 0
 
     def genConstraints_of_Round(r):
         assert r>=1
@@ -129,10 +146,28 @@ class Jdiff:
             constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftRk2[i],Rin[i],Lout[i]],xor_diff_pattern)
 
         # constraints in one round
+        for i in range(16):
+            constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin[i], aftRk1[i], aftP[i], aftRk2[i]], andSameRK_diff_pattern)
+        
+        # constraints between 2 adjacent rounds
+        if r % 2 == 0:
+            Lin_i_1 = Jdiff.genVars_Round(r - 2)[0:16]
+            aftRK_i_1 = Jdiff.genVars_aftRk1_Round(r - 2)
+            for i in range(16):
+                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_1[i], aftRK_i_1[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+        
+        # constraints between 2 rounds with interval of 8
+        if r > 8:
+            Lin_i_8 = Jdiff.genVars_Round(r - 9)[0:16]
+            aftRK_i_8 = Jdiff.genVars_aftRk1_Round(r - 9)
+            b_i = int((r - 1) / 2 - 4).to_bytes(2, byteorder='big')
+            for i in range(16):
+                if Jdiff.get_bit_val(b_i, i):
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK_i_8[i], Lin[i], aftRk1[i]], andSameRK_diff_pattern)
+                else:
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK_i_8[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
 
         return constraints
-    
-    # generate constraints of key between 2  adjacent rounds
 
     def genObjectiveFun_to_Round(r):
         assert r>=1
@@ -176,7 +211,7 @@ class Jdiff:
             print(v, file = myfile)
 
 def main():
-    Jdiff.genModel(5)
+    Jdiff.genModel(16)
 
 if __name__=='__main__':
     main()

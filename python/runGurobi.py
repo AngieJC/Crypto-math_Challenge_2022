@@ -13,9 +13,7 @@ for case in range(10):
 
 
 '''
-m=read('Jdiff_5r.lp')
+r = 12
+m=read('Jdiff_' + str(r) + 'r.lp')
 m.optimize()
-m.write("Jdiff_5r.sol")
-
-
-
+m.write('Jdiff_' + str(r) + 'r.sol')
