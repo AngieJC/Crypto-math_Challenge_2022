@@ -58,7 +58,7 @@ int main() {
 		ms.close();
 		return 0;
 	}
-	else if (r <= 4) {
+	else if (r <= 5) {
 		cout << "模式1：穷举所有可能的密钥\t" << "模式2：多次计算得出唯一密钥" << endl << "输入模式：";
 		int mode = 0;
 		cin >> mode;
