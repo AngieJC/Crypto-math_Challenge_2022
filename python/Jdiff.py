@@ -211,7 +211,7 @@ class Jdiff:
             print(v, file = myfile)
 
 def main():
-    Jdiff.genModel(16)
+    Jdiff.genModel(4)
 
 if __name__=='__main__':
     main()
