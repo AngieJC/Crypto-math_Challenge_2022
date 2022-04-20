@@ -13,7 +13,7 @@ for case in range(10):
 
 
 '''
-r = 4
+r = 5
 m=read('Jdiff_' + str(r) + 'r.lp')
 m.optimize()
 m.write('Jdiff_' + str(r) + 'r.sol')

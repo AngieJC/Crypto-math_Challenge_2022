@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Crypto-math_Challenge_2022"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Analysis", "Analysis\1Round.vcxproj", "{97DAF5B3-02B5-443E-AC9F-A240F5C9B9DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DifferentialCryptanalysis", "DifferentialCryptanalysis\DifferentialCryptanalysis.vcxproj", "{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{97DAF5B3-02B5-443E-AC9F-A240F5C9B9DF}.Release|x64.Build.0 = Release|x64
 		{97DAF5B3-02B5-443E-AC9F-A240F5C9B9DF}.Release|x86.ActiveCfg = Release|Win32
 		{97DAF5B3-02B5-443E-AC9F-A240F5C9B9DF}.Release|x86.Build.0 = Release|Win32
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Debug|x64.ActiveCfg = Debug|x64
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Debug|x64.Build.0 = Debug|x64
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Debug|x86.ActiveCfg = Debug|Win32
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Debug|x86.Build.0 = Debug|Win32
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Release|x64.ActiveCfg = Release|x64
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Release|x64.Build.0 = Release|x64
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Release|x86.ActiveCfg = Release|Win32
+		{E47BB379-ED1C-4ED0-9F16-025B3FE575FD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
