@@ -5,6 +5,7 @@
 # by AngieJC
 # htk90uggk@outlook.com
 
+from ast import In
 from operator import mod
 from BasicTools import *
 from ConstraintGenerator import *
@@ -55,6 +56,25 @@ andInveRK_diff_pattern = [(0, 0, 0, 1, 0),\
 (-1, 0, 0, 0, 1),\
 (-1, 1, -1, 1, 1),\
 (0, 0, -1, 0, 1)]
+
+adjacentAnd_diff = set([(0, 0, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 1, 0, 1), (0, 1, 0, 0, 0), (0, 1, 0, 0, 1), (0, 1, 0, 1, 0), (0, 1, 0, 1, 1), (0, 1, 1, 0, 0), (0, 1, 1, 0, 1), (0, 1, 1, 1, 0), (0, 1, 1, 1, 1), (1, 0, 0, 0, 0), (1, 0, 0, 1, 0), (1, 0, 1, 0, 0), (1, 0, 1, 1, 1), (1, 1, 0, 0, 0), (1, 1, 0, 0, 1), (1, 1, 0, 1, 0), (1, 1, 0, 1, 1), (1, 1, 1, 0, 0), (1, 1, 1, 0, 1), (1, 1, 1, 1, 0), (1, 1, 1, 1, 1)])
+adjacentAnd_diff_pattern = [(-1, 0, 0, 0, 0, 1),\
+(0, -1, 0, 0, 0, 1),\
+(0, 0, -1, 0, 0, 1),\
+(0, 0, 0, -1, 0, 1),\
+(0, 0, 0, 0, -1, 1),\
+(0, 1, -1, -1, 1, 1),\
+(0, 0, 0, 0, 1, 0),\
+(0, 0, 1, 0, 0, 0),\
+(0, 1, 0, 0, 0, 0),\
+(0, 0, 0, 1, 0, 0),\
+(1, 1, 0, -1, 0, 0),\
+(-1, 1, 0, 1, -1, 1),\
+(0, 1, 1, 0, -1, 0),\
+(1, 0, 0, 0, 0, 0)]
+
+adjacentAndandXor_diff = set()
+adjacentAndandXor_diff_pattern = []
 
 class Jdiff:
     def genVars_Round(r):
@@ -152,20 +172,41 @@ class Jdiff:
         # constraints between 2 adjacent rounds
         if r % 2 == 0:
             Lin_i_1 = Jdiff.genVars_Round(r - 2)[0:16]
-            aftRK_i_1 = Jdiff.genVars_aftRk1_Round(r - 2)
+            aftRK1_i_1 = Jdiff.genVars_aftRk1_Round(r - 2)
+            aftP_i_1 = Jdiff.genVars_aftP_Round(r - 2)
+            aftRk2_i_1 = Jdiff.genVars_aftRk2_Round(r - 2)
             for i in range(16):
-                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_1[i], aftRK_i_1[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_1[i], aftRK1_i_1[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_1[i], aftRK1_i_1[i], aftP[i], aftRk2[i]], andInveRK_diff_pattern)
+                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_1[i], aftRk2_i_1[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_1[i], aftRk2_i_1[i], aftP[i], aftRk2[i]], andInveRK_diff_pattern)
         
         # constraints between 2 rounds with interval of 8
         if r > 8:
             Lin_i_8 = Jdiff.genVars_Round(r - 9)[0:16]
-            aftRK_i_8 = Jdiff.genVars_aftRk1_Round(r - 9)
+            aftRK1_i_8 = Jdiff.genVars_aftRk1_Round(r - 9)
+            aftP_i_8 = Jdiff.genVars_aftP_Round(r - 9)
+            aftRK2_i_8 = Jdiff.genVars_aftRk2_Round(r - 9)
             b_i = int((r - 1) / 2 - 4).to_bytes(2, byteorder='big')
             for i in range(16):
                 if Jdiff.get_bit_val(b_i, i):
-                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK_i_8[i], Lin[i], aftRk1[i]], andSameRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK1_i_8[i], Lin[i], aftRk1[i]], andSameRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK1_i_8[i], aftP[i], aftRk2[i]], andSameRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_8[i], aftRK2_i_8[i], Lin[i], aftRk1[i]], andSameRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_8[i], aftRK2_i_8[i], aftP[i], aftRk2[i]], andSameRK_diff_pattern)
                 else:
-                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK_i_8[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK1_i_8[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([Lin_i_8[i], aftRK1_i_8[i], aftP[i], aftRk2[i]], andInveRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_8[i], aftRK2_i_8[i], Lin[i], aftRk1[i]], andInveRK_diff_pattern)
+                    constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([aftP_i_8[i], aftRK2_i_8[i], aftP[i], aftRk2[i]], andInveRK_diff_pattern)
+
+        # two adjacent And box will constrain 5 bits
+        # a     b     c
+        # |__&__|__&__|
+        #    |     |
+        #    α     β
+        for i in range(13):
+            constraints = constraints + ConstraintGenerator.genFromConstraintTemplate([bfS[i], bfS[i + 1], bfS[i + 2], inS[i], inS[i + 1]], adjacentAnd_diff_pattern)
 
         return constraints
 
@@ -186,8 +227,10 @@ class Jdiff:
         V = set([])
         C = list([])
 
-        initialConstraint = ' + '.join(Jdiff.genVars_Round(0)) + ' >= 1'
-        C.append(initialConstraint)
+        # initialConstraint = ' + '.join(Jdiff.genVars_Round(0)) + ' >= 1'
+        initialConstraint = ConstraintGenerator.genConsConstraints(Jdiff.genVars_Round(0), "10000000000000000000000000000000")
+        #C.append(initialConstraint)
+        C = C + initialConstraint
 
         for i in range(1,r+1):
             C = C + Jdiff.genConstraints_of_Round(i)
@@ -211,7 +254,7 @@ class Jdiff:
             print(v, file = myfile)
 
 def main():
-    Jdiff.genModel(5)
+    Jdiff.genModel(1)
 
 if __name__=='__main__':
     main()

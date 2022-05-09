@@ -13,7 +13,8 @@ for case in range(10):
 
 
 '''
-r = 5
+r = 1
 m=read('Jdiff_' + str(r) + 'r.lp')
+m.setParam("PoolSearchMode", 2)
 m.optimize()
 m.write('Jdiff_' + str(r) + 'r.sol')

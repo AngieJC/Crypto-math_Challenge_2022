@@ -36,8 +36,8 @@ class Jdiff_SolFileParser:
         self.printValue(Rin0)
         for i in range(1,r + 1):
             print(str(i)+'-round')
-            # Lin = Jdiff.genVars_Round(i-1)[0:16]
-            # Rin = Jdiff.genVars_Round(i-1)[16:32]
+            Lin = Jdiff.genVars_Round(i-1)[0:16]
+            Rin = Jdiff.genVars_Round(i-1)[16:32]
             aftRk1 = Jdiff.genVars_aftRk1_Round(i-1)
             Act_Rk1 = Jdiff.genVars_Act_Rk1_Round(i-1)
             Act_Rk2 = Jdiff.genVars_Act_Rk2_Round(i-1)
@@ -57,7 +57,6 @@ class Jdiff_SolFileParser:
             self.printValue(Lout)
             print('rightOut     ',end=' ')
             self.printValue(Rout)
-            
 
             '''
             print('aftRk1      ',end=' ')
@@ -104,7 +103,7 @@ class Jdiff_SolFileParser:
             self.printValue(Lout)
             '''
 def main():
-    r = 5
+    r = 1
     sol = Jdiff_SolFileParser("Jdiff_" + str(r) + "r.sol")
     sol.Jdiff_get_intermediates_to_Round(r)
 
