@@ -127,7 +127,8 @@ class Jdiff:
         aftS = Jdiff.genVars_aftS_Round(r-1)
         rot3 =  BasicTools.leftCyclicRotation(aftS, 3)
         rot9 =  BasicTools.leftCyclicRotation(aftS,9)
-        rot14 = BasicTools.leftCyclicRotation(aftS, 3)
+        # rot14 = BasicTools.leftCyclicRotation(aftS, 3)
+        rot14 = BasicTools.leftCyclicRotation(aftS, 14)
         aftP = Jdiff.genVars_aftP_Round(r-1)
         aftRk2 = Jdiff.genVars_aftRk2_Round(r-1)
         Lout = Jdiff.genVars_Round(r)[0:16]
@@ -227,9 +228,9 @@ class Jdiff:
         V = set([])
         C = list([])
 
-        # initialConstraint = ' + '.join(Jdiff.genVars_Round(0)) + ' >= 1'
-        initialConstraint = ConstraintGenerator.genConsConstraints(Jdiff.genVars_Round(0), "10000000000000000000000000000000")
+        #initialConstraint = ' + '.join(Jdiff.genVars_Round(0)) + ' >= 1'
         #C.append(initialConstraint)
+        initialConstraint = ConstraintGenerator.genConsConstraints(Jdiff.genVars_Round(0), "00000000000000001000000000000000")
         C = C + initialConstraint
 
         for i in range(1,r+1):
@@ -254,7 +255,7 @@ class Jdiff:
             print(v, file = myfile)
 
 def main():
-    Jdiff.genModel(1)
+    Jdiff.genModel(3)
 
 if __name__=='__main__':
     main()

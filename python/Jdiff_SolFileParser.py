@@ -57,8 +57,9 @@ class Jdiff_SolFileParser:
             self.printValue(Lout)
             print('rightOut     ',end=' ')
             self.printValue(Rout)
-
             '''
+
+            
             print('aftRk1      ',end=' ')
             self.printValue(aftRk1)
             print('Act_Rk1     ',end=' ')
