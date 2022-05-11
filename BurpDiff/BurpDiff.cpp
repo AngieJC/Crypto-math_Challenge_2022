@@ -12,15 +12,17 @@
 
 using namespace std;
 
+int map2File(string fname, map<uint64_t, uint32_t>* diffs);
+
 int main(int argc, char** argv) {
-	/*if (argc == 1) {
+	if (argc == 1) {
 		cout << "需要运行在MPI环境下！" << endl;
 		return 0;
 	}
 	else if (argc != 2) {
 		cout << "运行方式：mpiexec -n [进程数] ./a.out [轮数]" << endl;
 		return 0;
-	}*/
+	}
 
 	// 读取需要遍历的轮数
 	int r = atoi(argv[1]);
@@ -51,11 +53,32 @@ int main(int argc, char** argv) {
 	}
 
 	// 写入文本
+	char filename[32] = { 0 };
+	sprintf(filename, "r%d_th%d.csv", r, world_rank);
+	map2File(filename, &diffs);
 
 	// 进程同步
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
-	cout << "进程" << world_rank << "退出" << endl;
+	// cout << "进程" << world_rank << "退出" << endl;
+
+	return 0;
+}
+
+int map2File(string fname, map<uint64_t, uint32_t>* diffs) {
+	if (diffs->empty()) {
+		return 0;
+	}
+
+	FILE* fp = fopen(fname.c_str(), "w");
+	if (!fp) {
+		return -errno;
+	}
+	fprintf(fp, "k[3..0], 输出差分\n");
+	for (map<uint64_t, uint32_t>::iterator it = diffs->begin(); it != diffs->end(); it++) {
+		fprintf(fp, "%016X, %08X\n", it->first, it->second);
+	}
+	fclose(fp);
 
 	return 0;
 }
