@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
 
 	// 进程同步
 	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Finalize();
 	cout << "进程" << world_rank << "退出" << endl;
 
 	return 0;
