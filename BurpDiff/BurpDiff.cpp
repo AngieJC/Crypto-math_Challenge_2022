@@ -2,6 +2,8 @@
 #include <mpi.h>
 #include <iostream>
 #include <map>
+#include <cmath>
+#include <cstring>
 
 #define diffInL		0b0000000000000000
 #define diffInR		0b1000000000000000
