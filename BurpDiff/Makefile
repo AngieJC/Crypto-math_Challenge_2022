@@ -3,8 +3,8 @@ MPIXX?=/usr/bin/mpicxx
 
 all: ${EXECS}
 
-${EXECS}: BurpDiff.cpp
-    ${MPIXX} -o ${EXECS} BurpDiff.cpp
+BurpDiff: BurpDiff.cpp
+    ${MPIXX} -o BurpDiff BurpDiff.cpp
 
 clean:
-    rm ${EXECS}
+    rm -f ${EXECS}
