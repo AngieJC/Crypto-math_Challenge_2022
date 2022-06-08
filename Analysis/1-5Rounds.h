@@ -223,17 +223,17 @@ void analysis1_5Rounds(int r) {
 			Xor(&model, &k0Xork9, &k3Andk16Andk19, &k0Xork9Xork3Andk16Andk19);
 			model.addConstr(k0Xork9Xork3Andk16Andk19 == p_I25_L_0_3);
 			// p(x,v)5
-			/*GRBVar notTen = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar notTen = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 			GRBVar k1Xork10 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 			GRBVar k4Andk17 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
-			GRBVar k1Xork10Xork4Andk17 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
-			GRBVar k1Xork10Xork4Andk17Xork20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k4Andk17Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k1Xork10Xork4Andk17Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 			model.addConstr(K[10] == 1 - notTen);
 			Xor(&model, &K[1], &notTen, &k1Xork10);
 			And(&model, &notFour, &K[17], &k4Andk17);
-			Xor(&model, &k1Xork10, &k4Andk17, &k1Xork10Xork4Andk17);
-			Xor(&model, &k1Xork10Xork4Andk17, &K[20], &k1Xork10Xork4Andk17Xork20);
-			model.addConstr(k1Xork10Xork4Andk17Xork20 == p_I26_R_1_3);*/
+			And(&model, &k4Andk17, &K[20], &k4Andk17Andk20);
+			Xor(&model, &k1Xork10, &k4Andk17Andk20, &k1Xork10Xork4Andk17Andk20);
+			model.addConstr(k1Xork10Xork4Andk17Andk20 == p_I26_R_1_3);
 		}
 
 		// 求解
