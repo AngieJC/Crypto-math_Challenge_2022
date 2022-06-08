@@ -230,7 +230,7 @@ class Jdiff:
 
         #initialConstraint = ' + '.join(Jdiff.genVars_Round(0)) + ' >= 1'
         #C.append(initialConstraint)
-        initialConstraint = ConstraintGenerator.genConsConstraints(Jdiff.genVars_Round(0), "00000000000000001000000000000000")
+        initialConstraint = ConstraintGenerator.genConsConstraints(Jdiff.genVars_Round(0), "01000101011001110000000100100011")
         C = C + initialConstraint
 
         for i in range(1,r+1):
@@ -255,7 +255,7 @@ class Jdiff:
             print(v, file = myfile)
 
 def main():
-    Jdiff.genModel(3)
+    Jdiff.genModel(1)
 
 if __name__=='__main__':
     main()

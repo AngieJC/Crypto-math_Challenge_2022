@@ -17,7 +17,7 @@ int main() {
 	cout << "输入要分析的轮数：";
 	cin >> r;
 
-	/*switch (r)
+	switch (r)
 	{
 	case 1:
 		analysis1Round();
@@ -25,12 +25,15 @@ int main() {
 	case 2:
 		analysis2Rounds();
 		break;
+	case 3:
+	case 4:
+		analysis3_4Rounds(r);
 	default:
-		if (r > 2) {
-			analysisnRounds(r);
+		if (r > 4) {
+			// analysisnRounds(r);
 		}
 		break;
-	}*/
+	}
 
 	if (r == -1) { // 生成测试用例
 		u16 seedkey[4];
@@ -38,15 +41,15 @@ int main() {
 		// pt[0] = 0x0123; pt[1] = 0x89ab;
 		cout << "加密轮数：";
 		cin >> round;
-		seedkey[0] = 0xb0f5;
-		seedkey[1] = 0x8c1e;
+		seedkey[0] = 0xBFE5;
+		seedkey[1] = 0x37E5;
 		seedkey[2] = 0x7685;
 		seedkey[3] = 0xc167;
 		ifstream ms;
 		ms.open("m.txt", ios::in | ios::app);
 		string line;
 		stringstream str2digit;
-		for (int i = 0; i < 128; i++) {
+		for (int i = 0; i < 4; i++) {
 			getline(ms, line);
 			str2digit.clear();
 			str2digit.str("");
@@ -58,7 +61,7 @@ int main() {
 		ms.close();
 		return 0;
 	}
-	else if (r <= 5) {
+	/*else if (r <= 5) {
 		cout << "模式1：穷举所有可能的密钥\t" << "模式2：多次计算得出唯一密钥" << endl << "输入模式：";
 		int mode = 0;
 		cin >> mode;
@@ -76,7 +79,7 @@ int main() {
 		else {
 			cout << "未能识别模式" << endl;
 		}
-	}
+	}*/
 
 	return 0;
 }

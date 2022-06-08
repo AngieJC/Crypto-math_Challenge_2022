@@ -104,7 +104,7 @@ class Jdiff_SolFileParser:
             self.printValue(Lout)
             '''
 def main():
-    r = 1
+    r = 2
     sol = Jdiff_SolFileParser("Jdiff_" + str(r) + "r.sol")
     sol.Jdiff_get_intermediates_to_Round(r)
 
