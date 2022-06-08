@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <cstring>
 #include <stdio.h>
@@ -12,13 +12,13 @@ void analysis3_4Rounds(int r) {
 	switch (r)
 	{
 	case 3:
-		// ÃüÃû¹æÔò£ºp_I[Á¢·½]_[×ó°ë/ÓÒ°ë]_[Ë÷Òı]_[ÂÖÊı]
+		// å‘½åè§„åˆ™ï¼šp_I[ç«‹æ–¹]_[å·¦åŠ/å³åŠ]_[ç´¢å¼•]_[è½®æ•°]
 		int p_I3_R_0_3, p_I9_R_0_3, p_I10_R_1_3, p_I19_L_0_3, p_I25_L_0_3, p_I26_R_1_3;
 
-		// »ñÈ¡¸÷¸ö³¬¼¶¶àÏîÊ½µÄÈ¡Öµ
-		cout << "·Ö±ğ¶ÔÒÔÏÂÃ÷ÎÄ½øĞĞ¼ÓÃÜ£º" << endl;
+		// è·å–å„ä¸ªè¶…çº§å¤šé¡¹å¼çš„å–å€¼
+		cout << "åˆ†åˆ«å¯¹ä»¥ä¸‹æ˜æ–‡è¿›è¡ŒåŠ å¯†ï¼š" << endl;
 		cout << "00000000" << endl << "10000000" << endl << "00800000" << endl << "00400000" << endl << "00001000" << endl << "00000080" << endl << "00000040" << endl;
-		cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+		cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 		uint32_t c0, c1, c2, c3, c4, c5, c6;
 		cin.setf(ios_base::hex, ios_base::basefield);
 		cin >> c0 >> c1 >> c2 >> c3 >> c4 >> c5 >> c6;
@@ -29,8 +29,8 @@ void analysis3_4Rounds(int r) {
 		p_I25_L_0_3 = ((c0 & 0x80000000) ^ (c1 & 0x80000000)) ? 1 : 0;
 		p_I26_R_1_3 = ((c0 & 0x40000000) ^ (c1 & 0x40000000)) ? 1 : 0;
 
-		cout << "¼ÓÃÜffffffff" << endl;
-		cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+		cout << "åŠ å¯†ffffffff" << endl;
+		cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 		cin >> cinc;
 		for (seedkey[0] = 0; seedkey[0] <= 0xffff; seedkey[0]++) {
 			for (seedkey[1] = 0; seedkey[1] <= 0xffff; seedkey[1]++) {
