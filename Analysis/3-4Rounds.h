@@ -7,6 +7,8 @@
 using namespace std;
 
 void analysis3_4Rounds(int r) {
+	uint16_t c[2], p[2] = { 0xffff, 0xffff }, c_[2], cinc;
+	u16 seedkey[4];
 	switch (r)
 	{
 	case 3:
@@ -29,8 +31,6 @@ void analysis3_4Rounds(int r) {
 
 		cout << "加密ffffffff" << endl;
 		cout << "输入对应密文：" << endl;
-		uint16_t c[2], p[2] = {0xffff, 0xffff}, c_[2], cinc;
-		u16 seedkey[4];
 		cin >> cinc;
 		for (seedkey[0] = 0; seedkey[0] <= 0xffff; seedkey[0]++) {
 			for (seedkey[1] = 0; seedkey[1] <= 0xffff; seedkey[1]++) {

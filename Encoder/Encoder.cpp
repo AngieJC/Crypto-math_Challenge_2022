@@ -8,6 +8,7 @@ int main(int argc, char ** argv) {
     if (argc != 6) {
         cout << "用法：./a.out k0 k1 k2 k3 r" << endl;
         cout << "例子：./a.out 0123 4567 89ab cdef 4" << endl;
+        return 1;
     }
     int r = atoi(argv[5]);
     cout << "加密" << r << "轮，" << "输入明文：" << endl;
