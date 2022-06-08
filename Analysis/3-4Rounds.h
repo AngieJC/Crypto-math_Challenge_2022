@@ -33,7 +33,7 @@ void analysis3_4Rounds(int r) {
 		cout << "加密ffffffff" << endl;
 		cout << "输入对应密文：" << endl;
 		cin >> cinc;
-		memcpy(&c_[0], (u16*)(&cinc + 1), 2);
+		memcpy(&c_[0], (u16*)(&cinc) + 1, 2);
 		memcpy(&c_[1], (u16*)(&cinc), 2);
 		for (seedkey[0] = 0; seedkey[0] <= 0xffff; seedkey[0]++) {
 			for (seedkey[1] = 0; seedkey[1] <= 0xffff; seedkey[1]++) {
