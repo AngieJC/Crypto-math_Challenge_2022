@@ -10,6 +10,7 @@ void analysis3_4Rounds(int r) {
 	uint16_t c[2], p[2] = { 0xffff, 0xffff }, c_[2];
 	uint32_t cinc;
 	u16 seedkey[4];
+	int flag1 = 0, flag2;
 	switch (r)
 	{
 	case 3:
@@ -33,7 +34,6 @@ void analysis3_4Rounds(int r) {
 		cout << "加密ffffffff" << endl;
 		cout << "输入对应密文：" << endl;
 		cin >> cinc;
-		int flag1 = 0, flag2;
 		memcpy(&c_[0], (u16*)(&cinc) + 1, 2);
 		memcpy(&c_[1], (u16*)(&cinc), 2);
 		for (seedkey[0] = 0; flag1 <= 0xffff; seedkey[0]++, flag1++) {
