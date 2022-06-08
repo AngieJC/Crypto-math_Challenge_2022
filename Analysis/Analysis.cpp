@@ -27,9 +27,11 @@ int main() {
 		break;
 	case 3:
 	case 4:
-		analysis3_4Rounds(r);
+	case 5:
+		analysis1_5Rounds(r);
+		break;
 	default:
-		if (r > 4) {
+		if (r > 5) {
 			// analysisnRounds(r);
 		}
 		break;

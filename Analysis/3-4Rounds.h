@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// 采用遍历的方式获得密钥，已放弃
+
+#pragma once
 #include <iostream>
 #include <cstring>
 #include <stdio.h>

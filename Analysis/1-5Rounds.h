@@ -16,13 +16,15 @@
 using namespace std;
 using namespace std::chrono;
 
-void analysis1_4Rounds(int r) {
-	uint16_t L0 = 0, R0 = 0, Lr = 0, Rr = 0;
+void And(GRBModel * m, GRBVar* a, GRBVar* b, GRBVar* c);
+void Xor(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c);
+
+void analysis1_5Rounds(int r) {
+	uint16_t L0 = 0xffff, R0 = 0xffff, Lr = 0, Rr = 0;
 	uint32_t c = 0;
-	cout << "输入pt[0], pt[1](十六进制)：";
+	cout << "加密ffffffff" << endl;
+	cout << "输入对应密文：" << endl;
 	cin.setf(ios_base::hex, ios_base::basefield);
-	cin >> L0 >> R0;
-	cout << "输入密文(十六进制)：";
 	cin >> c;
 	// 将密文拆解成Lr和Rr
 	memcpy(&Rr, ((uint16_t*)&c), 2);
@@ -151,6 +153,89 @@ void analysis1_4Rounds(int r) {
 			model.addConstr(X[144 * r + 8 * 16 + i] == (int)Rr_bit[15 - i]);
 		}
 
+		// 超级多项式约束
+		if (r == 3) {
+			// 命名规则：p_I[立方]_[左半/右半]_[索引]_[轮数]
+			int p_I3_R_0_3, p_I9_R_0_3, p_I10_R_1_3, p_I19_L_0_3, p_I25_L_0_3, p_I26_R_1_3;
+
+			// 获取各个超级多项式的取值
+			cout << "分别对以下明文进行加密：" << endl;
+			cout << "00000000" << endl << "10000000" << endl << "00400000" << endl << "00200000" << endl << "00001000" << endl << "00000040" << endl << "00000020" << endl;
+			cout << "输入对应密文：" << endl;
+			uint32_t c0, c1, c2, c3, c4, c5, c6;
+			cin >> c0 >> c1 >> c2 >> c3 >> c4 >> c5 >> c6;
+			p_I3_R_0_3 = ((c0 & 0x00008000) ^ (c1 & 0x00008000)) ? 1 : 0;
+			p_I9_R_0_3 = ((c0 & 0x00008000) ^ (c2 & 0x00008000)) ? 1 : 0;
+			p_I10_R_1_3 = ((c0 & 0x00004000) ^ (c3 & 0x00004000)) ? 1 : 0;
+			p_I19_L_0_3 = ((c0 & 0x80000000) ^ (c4 & 0x80000000)) ? 1 : 0;
+			p_I25_L_0_3 = ((c0 & 0x80000000) ^ (c5 & 0x80000000)) ? 1 : 0;
+			p_I26_R_1_3 = ((c0 & 0x40000000) ^ (c6 & 0x40000000)) ? 1 : 0;
+
+			// p(x,v)0
+			GRBVar notZero = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(K[0] == 1 - notZero);
+			GRBVar k3Xork0 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &K[3], &notZero, &k3Xork0);
+			GRBVar k3Xork0Xork19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &k3Xork0, &K[19], &k3Xork0Xork19);
+			model.addConstr(k3Xork0Xork19 == p_I3_R_0_3);
+			// p(x,v)1
+			GRBVar notThree = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(K[3] == 1 - notThree);
+			GRBVar k3Andk9 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k3Andk9Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			And(&model, &notThree, &K[9], &k3Andk9);
+			And(&model, &k3Andk9, &K[19], &k3Andk9Andk19);
+			GRBVar k25Xork0 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &K[25], &notZero, &k25Xork0);
+			GRBVar k25Xork0Xork3Andk9Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &k25Xork0, &k3Andk9Andk19, &k25Xork0Xork3Andk9Andk19);
+			model.addConstr(k25Xork0Xork3Andk9Andk19 == p_I9_R_0_3);
+			// p(x,v)2
+			GRBVar notOne = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar notFour = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(K[1] == 1 - notOne);
+			model.addConstr(K[4] == 1 - notFour);
+			GRBVar k4Andk10 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k4Andk10Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			And(&model, &notFour, &K[10], &k4Andk10);
+			And(&model, &k4Andk10, &K[20], &k4Andk10Andk20);
+			GRBVar k26Xork1 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &K[26], &notOne, &k26Xork1);
+			GRBVar k26Xork1Xork4Andk10Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &k26Xork1, &k4Andk10Andk20, &k26Xork1Xork4Andk10Andk20);
+			model.addConstr(k26Xork1Xork4Andk10Andk20 == p_I10_R_1_3);
+			// p(x,v)3
+			GRBVar k0Xork3 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k0Xork3Xork16 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			Xor(&model, &K[0], &notThree, &k0Xork3);
+			Xor(&model, &k0Xork3, &K[16], &k0Xork3Xork16);
+			model.addConstr(k0Xork3Xork16 == p_I19_L_0_3);
+			// p(x,v)4
+			GRBVar notNine = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k0Xork9 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k3Andk16 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k3Andk16Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k0Xork9Xork3Andk16Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			And(&model, &notThree, &K[16], &k3Andk16);
+			And(&model, &k3Andk16, &K[19], &k3Andk16Andk19);
+			Xor(&model, &K[0], &notNine, &k0Xork9);
+			Xor(&model, &k0Xork9, &k3Andk16Andk19, &k0Xork9Xork3Andk16Andk19);
+			model.addConstr(k0Xork9Xork3Andk16Andk19 == p_I25_L_0_3);
+			// p(x,v)5
+			/*GRBVar notTen = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k1Xork10 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k4Andk17 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k1Xork10Xork4Andk17 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			GRBVar k1Xork10Xork4Andk17Xork20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+			model.addConstr(K[10] == 1 - notTen);
+			Xor(&model, &K[1], &notTen, &k1Xork10);
+			And(&model, &notFour, &K[17], &k4Andk17);
+			Xor(&model, &k1Xork10, &k4Andk17, &k1Xork10Xork4Andk17);
+			Xor(&model, &k1Xork10Xork4Andk17, &K[20], &k1Xork10Xork4Andk17Xork20);
+			model.addConstr(k1Xork10Xork4Andk17Xork20 == p_I26_R_1_3);*/
+		}
+
 		// 求解
 		model.set(GRB_DoubleParam_MIPGap, GRB_INFINITY);
 		model.set(GRB_IntParam_PoolSearchMode, 2);
@@ -158,7 +243,7 @@ void analysis1_4Rounds(int r) {
 		model.set(GRB_IntParam_RINS, 0);
 		model.set(GRB_IntParam_MIPFocus, 3);
 		model.set(GRB_IntParam_VarBranch, 2);
-		// model.write("nRounds.lp");
+		model.write("nRounds.lp");
 		auto start = high_resolution_clock::now();
 		model.optimize();
 		auto stop = high_resolution_clock::now();
@@ -225,4 +310,15 @@ void analysis1_4Rounds(int r) {
 	
 
 	return;
+}
+
+void And(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c) {
+	m->addQConstr(*c == (*a) * (*b));
+}
+
+void Xor(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c) {
+	m->addConstr(*c >= *a - *b);
+	m->addConstr(*c >= *b - *a);
+	m->addConstr(*c <= *b + *a);
+	m->addConstr(*c <= 2 - *b - *a);
 }

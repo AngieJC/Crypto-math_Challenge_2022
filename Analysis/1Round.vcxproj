@@ -151,7 +151,7 @@
     <ClInclude Include="2Rounds.h" />
     <ClInclude Include="3-4Rounds.h" />
     <ClInclude Include="CryptographicAlgorithm.h" />
-    <ClInclude Include="1-4Rounds.h" />
+    <ClInclude Include="1-5Rounds.h" />
     <ClInclude Include="Rounds.h" />
   </ItemGroup>
   <ItemGroup>
