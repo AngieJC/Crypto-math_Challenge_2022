@@ -7,7 +7,8 @@
 using namespace std;
 
 void analysis3_4Rounds(int r) {
-	uint16_t c[2], p[2] = { 0xffff, 0xffff }, c_[2], cinc;
+	uint16_t c[2], p[2] = { 0xffff, 0xffff }, c_[2];
+	uint32_t cinc;
 	u16 seedkey[4];
 	switch (r)
 	{
