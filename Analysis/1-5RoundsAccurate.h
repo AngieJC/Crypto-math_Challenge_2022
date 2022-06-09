@@ -31,7 +31,35 @@ struct cmpBitset288 {
 	}
 };
 
-void analysis1_4RoundsAccurate(int r, int n) {
+void analysis1_5RoundsAccurate(int r, int n) {
+	// 命名规则：p_I[立方]_[左半/右半]_[索引]_[轮数]
+	int p_I3_R_0_3, p_I9_R_0_3, p_I10_R_1_3, p_I19_L_0_3, p_I25_L_0_3, p_I26_R_1_3;
+	uint32_t c0, c1, c2, c3, c4, c5, c6;
+	int p_I2_R_0_4, p_I18_L_0_4;
+	uint32_t c7, c8, c9;
+	cin.setf(ios_base::hex, ios_base::basefield);
+	if (r == 3) {
+		// 获取各个超级多项式的取值
+		cout << "分别对以下明文进行加密：" << endl;
+		cout << "00000000" << endl << "10000000" << endl << "00400000" << endl << "00200000" << endl << "00001000" << endl << "00000040" << endl << "00000020" << endl;
+		cout << "输入对应密文：" << endl;
+		cin >> c0 >> c1 >> c2 >> c3 >> c4 >> c5 >> c6;
+		p_I3_R_0_3 = ((c0 & 0x00008000) ^ (c1 & 0x00008000)) ? 1 : 0;
+		p_I9_R_0_3 = ((c0 & 0x00008000) ^ (c2 & 0x00008000)) ? 1 : 0;
+		p_I10_R_1_3 = ((c0 & 0x00004000) ^ (c3 & 0x00004000)) ? 1 : 0;
+		p_I19_L_0_3 = ((c0 & 0x80000000) ^ (c4 & 0x80000000)) ? 1 : 0;
+		p_I25_L_0_3 = ((c0 & 0x80000000) ^ (c5 & 0x80000000)) ? 1 : 0;
+		p_I26_R_1_3 = ((c0 & 0x40000000) ^ (c6 & 0x40000000)) ? 1 : 0;
+	}
+	else if (r == 4) {
+		cout << "分别对以下明文进行加密：" << endl;
+		cout << "00000000" << endl << "20000000" << endl << "00002000" << endl;
+		cout << "输入对应密文：" << endl;
+		cin >> c7 >> c8 >> c9;
+		p_I2_R_0_4 = ((c7 & 0x00008000) ^ (c8 & 0x00008000)) ? 1 : 0;
+		p_I18_L_0_4 = ((c7 & 0x80000000) ^ (c9 & 0x80000000)) ? 1 : 0;
+	}
+
 	auto start = high_resolution_clock::now();
 	uint16_t L0, R0, Lr = 0, Rr = 0;
 	uint32_t c = 0;
@@ -182,6 +210,128 @@ void analysis1_4RoundsAccurate(int r, int n) {
 			for (int i = 15; i >= 0; i--) {
 				model.addConstr(X[144 * r + 7 * 16 + i] == (int)Lr_bit[15 - i]);
 				model.addConstr(X[144 * r + 8 * 16 + i] == (int)Rr_bit[15 - i]);
+			}
+
+			// 超级多项式约束
+			if (r == 3) {
+				// p(x,v)0
+				GRBVar notZero = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				model.addConstr(K[0] == 1 - notZero);
+				GRBVar k3Xork0 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &K[3], &notZero, &k3Xork0);
+				GRBVar k3Xork0Xork19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &k3Xork0, &K[19], &k3Xork0Xork19);
+				model.addConstr(k3Xork0Xork19 == p_I3_R_0_3);
+				// p(x,v)1
+				GRBVar notThree = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				model.addConstr(K[3] == 1 - notThree);
+				GRBVar k3Andk9 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k3Andk9Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				And(&model, &notThree, &K[9], &k3Andk9);
+				And(&model, &k3Andk9, &K[19], &k3Andk9Andk19);
+				GRBVar k25Xork0 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &K[25], &notZero, &k25Xork0);
+				GRBVar k25Xork0Xork3Andk9Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &k25Xork0, &k3Andk9Andk19, &k25Xork0Xork3Andk9Andk19);
+				model.addConstr(k25Xork0Xork3Andk9Andk19 == p_I9_R_0_3);
+				// p(x,v)2
+				GRBVar notOne = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar notFour = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				model.addConstr(K[1] == 1 - notOne);
+				model.addConstr(K[4] == 1 - notFour);
+				GRBVar k4Andk10 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k4Andk10Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				And(&model, &notFour, &K[10], &k4Andk10);
+				And(&model, &k4Andk10, &K[20], &k4Andk10Andk20);
+				GRBVar k26Xork1 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &K[26], &notOne, &k26Xork1);
+				GRBVar k26Xork1Xork4Andk10Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &k26Xork1, &k4Andk10Andk20, &k26Xork1Xork4Andk10Andk20);
+				model.addConstr(k26Xork1Xork4Andk10Andk20 == p_I10_R_1_3);
+				// p(x,v)3
+				GRBVar k0Xork3 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k0Xork3Xork16 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				Xor(&model, &K[0], &notThree, &k0Xork3);
+				Xor(&model, &k0Xork3, &K[16], &k0Xork3Xork16);
+				model.addConstr(k0Xork3Xork16 == p_I19_L_0_3);
+				// p(x,v)4
+				GRBVar notNine = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k0Xork9 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k3Andk16 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k3Andk16Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k0Xork9Xork3Andk16Andk19 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				And(&model, &notThree, &K[16], &k3Andk16);
+				And(&model, &k3Andk16, &K[19], &k3Andk16Andk19);
+				Xor(&model, &K[0], &notNine, &k0Xork9);
+				Xor(&model, &k0Xork9, &k3Andk16Andk19, &k0Xork9Xork3Andk16Andk19);
+				model.addConstr(k0Xork9Xork3Andk16Andk19 == p_I25_L_0_3);
+				// p(x,v)5
+				GRBVar notTen = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k1Xork10 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k4Andk17 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k4Andk17Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				GRBVar k1Xork10Xork4Andk17Andk20 = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
+				model.addConstr(K[10] == 1 - notTen);
+				Xor(&model, &K[1], &notTen, &k1Xork10);
+				And(&model, &notFour, &K[17], &k4Andk17);
+				And(&model, &k4Andk17, &K[20], &k4Andk17Andk20);
+				Xor(&model, &k1Xork10, &k4Andk17Andk20, &k1Xork10Xork4Andk17Andk20);
+				model.addConstr(k1Xork10Xork4Andk17Andk20 == p_I26_R_1_3);
+			}
+			else if (r == 4) {
+				// p(x,v) = k_2 k_9 k_16 + k_18 + !k_9 k_16 k_25 + !k_9 + k_2 k_16 k_25 + k_2 k_9 !k_25 + !k_25 + k_16 + k_2 !k_12 k_28 + k_2 !k_6 k_22
+				GRBVar not6 = GetNOT(&model, &K[6]);
+				GRBVar not9 = GetNOT(&model, &K[9]);
+				GRBVar not12 = GetNOT(&model, &K[12]);
+				GRBVar not25 = GetNOT(&model, &K[25]);
+				GRBVar k2Andk9 = And(&model, &K[2], &K[9]);
+				GRBVar k2Andk9Andk16 = And(&model, &k2Andk9, &K[16]);
+				GRBVar k2Andk9Andk16Xork18 = Xor(&model, &k2Andk9Andk16, &K[18]);
+				GRBVar k9Andk16 = And(&model, &not9, &K[16]);
+				GRBVar k9Andk16Andk25 = And(&model, &k9Andk16, &K[25]);
+				GRBVar k2Andk9Andk16Xork18Xork9Andk16Andk25 = Xor(&model, &k2Andk9Andk16Xork18, &k9Andk16Andk25);
+				GRBVar k2Andk9Andk16Xork18Xork9Andk16Andk25Xork9 = Xor(&model, &k2Andk9Andk16Xork18Xork9Andk16Andk25, &not9);
+				GRBVar k2Andk16 = And(&model, &K[2], &K[16]);
+				GRBVar e = And(&model, &k2Andk16, &K[25]);
+				// GRBVar* k2Andk9 = And(&model, &K[2], &K[9]);
+				GRBVar f = And(&model, &k2Andk9, &not25);
+				GRBVar k2Andk12 = And(&model, &not12, &K[2]);
+				GRBVar i = And(&model, &k2Andk12, &K[28]);
+				GRBVar k2Andk6 = And(&model, &not6, &K[2]);
+				GRBVar j = And(&model, &k2Andk6, &K[22]);
+				GRBVar dXore = Xor(&model, &k2Andk9Andk16Xork18Xork9Andk16Andk25Xork9, &e);
+				GRBVar eXorf = Xor(&model, &dXore, &f);
+				GRBVar fXorg = Xor(&model, &f, &not25);
+				GRBVar gXorh = Xor(&model, &fXorg, &K[16]);
+				GRBVar hXori = Xor(&model, &gXorh, &i);
+				GRBVar iXorj = Xor(&model, &hXori, &j);
+				model.addConstr(iXorj == p_I2_R_0_4);
+
+				// p(x,v) = k_9 + !k_2 !k_9 k_25 + !k_2 !k_9 !k_16 + k_25+k_9 !k_16 !k_25 + !k_2 !k_16 !k_25 + !k_2 + !k_0 + !k_12 !k_16 k_28 + !k_6 !k_16 k_22
+				GRBVar not0 = GetNOT(&model, &K[0]);
+				GRBVar not2 = GetNOT(&model, &K[2]);
+				GRBVar not16 = GetNOT(&model, &K[16]);
+				GRBVar not2Andnot9 = And(&model, &not2, &not9);
+				GRBVar k = And(&model, &not2Andnot9, &K[25]);
+				GRBVar l = And(&model, &not2Andnot9, &not16);
+				GRBVar k9Andnot16 = And(&model, &K[9], &not16);
+				GRBVar m = And(&model, &k9Andnot16, &not25);
+				GRBVar not2Andnot16 = And(&model, &not2, &not16);
+				GRBVar n = And(&model, &not2Andnot16, &not25);
+				GRBVar not12Andnot16 = And(&model, &not12, &not16);
+				GRBVar o = And(&model, &not12Andnot16, &K[28]);
+				GRBVar not6Andnot16 = And(&model, &not6, &not16);
+				GRBVar p = And(&model, &not6Andnot16, &K[22]);
+				GRBVar k9Xork = Xor(&model, &K[9], &k);
+				GRBVar kXorl = Xor(&model, &k9Xork, &l);
+				GRBVar lXork25 = Xor(&model, &kXorl, &K[25]);
+				GRBVar k25Xorm = Xor(&model, &m, &lXork25);
+				GRBVar nXorm = Xor(&model, &k25Xorm, &n);
+				GRBVar nXornot2 = Xor(&model, &not2, &nXorm);
+				GRBVar not0Xornot2 = Xor(&model, &nXornot2, &not0);
+				GRBVar not0Xoro = Xor(&model, &o, &not0Xornot2);
+				GRBVar pXoro = Xor(&model, &not0Xoro, &p);
+				model.addConstr(pXoro == p_I18_L_0_4);
 			}
 
 			// 求解

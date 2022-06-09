@@ -28,7 +28,8 @@ int main() {
 	case 3:
 	case 4:
 	case 5:
-		analysis1_5Rounds(r);
+		// analysis1_5Rounds(r);
+		analysis1_5RoundsAccurate(r, 4);
 		break;
 	default:
 		if (r > 5) {
@@ -43,22 +44,22 @@ int main() {
 		// pt[0] = 0x0123; pt[1] = 0x89ab;
 		cout << "加密轮数：";
 		cin >> round;
-		seedkey[0] = 0xBFE5;
-		seedkey[1] = 0x37E5;
-		seedkey[2] = 0x7685;
-		seedkey[3] = 0xc167;
+		seedkey[0] = 0x0123;
+		seedkey[1] = 0x4567;
+		seedkey[2] = 0x0000;
+		seedkey[3] = 0x0000;
 		ifstream ms;
 		ms.open("m.txt", ios::in | ios::app);
 		string line;
 		stringstream str2digit;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 34; i++) {
 			getline(ms, line);
 			str2digit.clear();
 			str2digit.str("");
 			str2digit << line;
 			str2digit >> hex >> pt[0] >> pt[1];
 			Enc(pt, ct, seedkey, round);
-			printf("%04X%04X\n", ct[0], ct[1]);
+			printf("%04x%04x\n", ct[0], ct[1]);
 		}
 		ms.close();
 		return 0;
