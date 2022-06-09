@@ -248,7 +248,7 @@ void analysis1_5Rounds(int r) {
 			p_I2_R_0_4 = ((c0 & 0x00008000) ^ (c1 & 0x00008000)) ? 1 : 0;
 			p_I18_L_0_4 = ((c0 & 0x80000000) ^ (c2 & 0x80000000)) ? 1 : 0;
 
-			// p(x,v)=k_2 k_9 k_16 + k_18 + !k_9 k_16 k_25 + !k_9 + k_2 k_16 k_25 + k_2 k_9 !k_25 + !k_25 + k_16 + k_2 !k_12 k_28 + k_2 !k_6 k_22
+			// p(x,v) = k_2 k_9 k_16 + k_18 + !k_9 k_16 k_25 + !k_9 + k_2 k_16 k_25 + k_2 k_9 !k_25 + !k_25 + k_16 + k_2 !k_12 k_28 + k_2 !k_6 k_22
 			GRBVar not6 = GetNOT(&model, &K[6]);
 			GRBVar not9 = GetNOT(&model, &K[9]);
 			GRBVar not12 = GetNOT(&model, &K[12]);
@@ -275,6 +275,32 @@ void analysis1_5Rounds(int r) {
 			GRBVar hXori = Xor(&model, &gXorh, &i);
 			GRBVar iXorj = Xor(&model, &hXori, &j);
 			model.addConstr(iXorj == p_I2_R_0_4);
+
+			// p(x,v) = k_9 + !k_2 !k_9 k_25 + !k_2 !k_9 !k_16 + k_25+k_9 !k_16 !k_25 + !k_2 !k_16 !k_25 + !k_2 + !k_0 + !k_12 !k_16 k_28 + !k_6 !k_16 k_22
+			GRBVar not0 = GetNOT(&model, &K[0]);
+			GRBVar not2 = GetNOT(&model, &K[2]);
+			GRBVar not16 = GetNOT(&model, &K[16]);
+			GRBVar not2Andnot9 = And(&model, &not2, &not9);
+			GRBVar k = And(&model, &not2Andnot9, &K[25]);
+			GRBVar l = And(&model, &not2Andnot9, &not16);
+			GRBVar k9Andnot16 = And(&model, &K[9], &not16);
+			GRBVar m = And(&model, &k9Andnot16, &not25);
+			GRBVar not2Andnot16 = And(&model, &not2, &not16);
+			GRBVar n = And(&model, &not2Andnot16, &not25);
+			GRBVar not12Andnot16 = And(&model, &not12, &not16);
+			GRBVar o = And(&model, &not12Andnot16, &K[28]);
+			GRBVar not6Andnot16 = And(&model, &not6, &not16);
+			GRBVar p = And(&model, &not6Andnot16, &K[22]);
+			GRBVar k9Xork = Xor(&model, &K[9], &k);
+			GRBVar kXorl = Xor(&model, &k9Xork, &l);
+			GRBVar lXork25 = Xor(&model, &kXorl, &K[25]);
+			GRBVar k25Xorm = Xor(&model, &m, &lXork25);
+			GRBVar nXorm = Xor(&model, &k25Xorm, &n);
+			GRBVar nXornot2 = Xor(&model, &not2, &nXorm);
+			GRBVar not0Xornot2 = Xor(&model, &nXornot2, &not0);
+			GRBVar not0Xoro = Xor(&model, &o, &not0Xornot2);
+			GRBVar pXoro = Xor(&model, &not0Xoro, &p);
+			model.addConstr(pXoro == p_I18_L_0_4);
 		}
 
 		// 求解
