@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <fstream>
 #include <istream>
@@ -32,17 +32,17 @@ struct cmpBitset288 {
 };
 
 void analysis1_5RoundsAccurate(int r, int n) {
-	// ÃüÃû¹æÔò£ºp_I[Á¢·½]_[×ó°ë/ÓÒ°ë]_[Ë÷Òı]_[ÂÖÊı]
+	// å‘½åè§„åˆ™ï¼šp_I[ç«‹æ–¹]_[å·¦åŠ/å³åŠ]_[ç´¢å¼•]_[è½®æ•°]
 	int p_I3_R_0_3, p_I9_R_0_3, p_I10_R_1_3, p_I19_L_0_3, p_I25_L_0_3, p_I26_R_1_3;
 	uint32_t c0, c1, c2, c3, c4, c5, c6;
 	int p_I2_R_0_4, p_I18_L_0_4;
 	uint32_t c7, c8, c9;
 	cin.setf(ios_base::hex, ios_base::basefield);
 	if (r == 3) {
-		// »ñÈ¡¸÷¸ö³¬¼¶¶àÏîÊ½µÄÈ¡Öµ
-		cout << "·Ö±ğ¶ÔÒÔÏÂÃ÷ÎÄ½øĞĞ¼ÓÃÜ£º" << endl;
+		// è·å–å„ä¸ªè¶…çº§å¤šé¡¹å¼çš„å–å€¼
+		cout << "åˆ†åˆ«å¯¹ä»¥ä¸‹æ˜æ–‡è¿›è¡ŒåŠ å¯†ï¼š" << endl;
 		cout << "00000000" << endl << "10000000" << endl << "00400000" << endl << "00200000" << endl << "00001000" << endl << "00000040" << endl << "00000020" << endl;
-		cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+		cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 		cin >> c0 >> c1 >> c2 >> c3 >> c4 >> c5 >> c6;
 		p_I3_R_0_3 = ((c0 & 0x00008000) ^ (c1 & 0x00008000)) ? 1 : 0;
 		p_I9_R_0_3 = ((c0 & 0x00008000) ^ (c2 & 0x00008000)) ? 1 : 0;
@@ -52,9 +52,9 @@ void analysis1_5RoundsAccurate(int r, int n) {
 		p_I26_R_1_3 = ((c0 & 0x40000000) ^ (c6 & 0x40000000)) ? 1 : 0;
 	}
 	else if (r == 4) {
-		cout << "·Ö±ğ¶ÔÒÔÏÂÃ÷ÎÄ½øĞĞ¼ÓÃÜ£º" << endl;
+		cout << "åˆ†åˆ«å¯¹ä»¥ä¸‹æ˜æ–‡è¿›è¡ŒåŠ å¯†ï¼š" << endl;
 		cout << "00000000" << endl << "20000000" << endl << "00002000" << endl;
-		cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+		cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 		cin >> c7 >> c8 >> c9;
 		p_I2_R_0_4 = ((c7 & 0x00008000) ^ (c8 & 0x00008000)) ? 1 : 0;
 		p_I18_L_0_4 = ((c7 & 0x80000000) ^ (c9 & 0x80000000)) ? 1 : 0;
@@ -85,12 +85,12 @@ void analysis1_5RoundsAccurate(int r, int n) {
 		str2digit << lineContext;
 		str2digit >> hex >> c;
 		// c = stoi(lineContext, NULL, 16);
-		// ½«ÃÜÎÄ²ğ½â³ÉLrºÍRr
+		// å°†å¯†æ–‡æ‹†è§£æˆLrå’ŒRr
 		memcpy(&Rr, ((uint16_t*)&c), 2);
 		memcpy(&Lr, ((uint16_t*)&c + 1), 2);
 
 		try {
-			// MILP»·¾³
+			// MILPç¯å¢ƒ
 			GRBEnv env = GRBEnv(true);
 			char logfile_str[32];
 			sprintf(logfile_str, "%dRounds.log", r);
@@ -98,12 +98,12 @@ void analysis1_5RoundsAccurate(int r, int n) {
 			env.set(GRB_DoubleParam_PoolGap, GRB_INFINITY);
 			env.start();
 
-			// ´´½¨¿ÕÄ£ĞÍ
+			// åˆ›å»ºç©ºæ¨¡å‹
 			GRBModel model = GRBModel(env);
 
-			/* ³õÊ¼±äÁ¿ */
-			// ÃÜÔ¿À©Õ¹
-			// ¶ÔÓÚrÂÖ¼ÓÃÜ£¬¹²ĞèÒª(int)(r / 2) + r % 2¸öK
+			/* åˆå§‹å˜é‡ */
+			// å¯†é’¥æ‰©å±•
+			// å¯¹äºrè½®åŠ å¯†ï¼Œå…±éœ€è¦(int)(r / 2) + r % 2ä¸ªK
 			vector<GRBVar> K(((int)(r / 2) + r % 2) * 16);
 			for (int i = 0; i < ((int)(r / 2) + r % 2) * 16; i++) {
 				K[i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
@@ -117,9 +117,9 @@ void analysis1_5RoundsAccurate(int r, int n) {
 			}
 
 			vector<GRBVar> X(144 * (r + 1));
-			// L0, R0¹²32¸ö±äÁ¿£¬Ã÷ÎÄÔ¼Êø
+			// L0, R0å…±32ä¸ªå˜é‡ï¼Œæ˜æ–‡çº¦æŸ
 			bitset<16> L0_bit = L0, R0_bit = R0;
-			for (int i = 0; i < 16; i++) { // Îª±£³Ö½á¹¹Ò»ÖÂ£¬·½±ã±àÂë£¬³õÊ¼±äÁ¿ÖĞÇ°7*16¸öÎ»ÖÃ²¢Ã»ÓĞÒâÒå£¬Ö»ÊÇÕ¼Î»
+			for (int i = 0; i < 16; i++) { // ä¸ºä¿æŒç»“æ„ä¸€è‡´ï¼Œæ–¹ä¾¿ç¼–ç ï¼Œåˆå§‹å˜é‡ä¸­å‰7*16ä¸ªä½ç½®å¹¶æ²¡æœ‰æ„ä¹‰ï¼Œåªæ˜¯å ä½
 				X[7 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 				model.addConstr(X[7 * 16 + i] == (int)L0_bit[15 - i]);
 				X[8 * 16 + i] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
@@ -127,7 +127,7 @@ void analysis1_5RoundsAccurate(int r, int n) {
 			}
 
 
-			/* ¼ÆËãdiºÍeiÊ±Éæ¼°3¸ö²Ù×÷Êı£¬·Ö±ğĞèÒªr*16¸öÖĞ¼ä±äÁ¿ */
+			/* è®¡ç®—diå’Œeiæ—¶æ¶‰åŠ3ä¸ªæ“ä½œæ•°ï¼Œåˆ†åˆ«éœ€è¦r*16ä¸ªä¸­é—´å˜é‡ */
 			vector<GRBVar> D(14 * r);
 			vector<GRBVar> E(16 * r);
 			for (int i = 0; i < 14 * r; i++) {
@@ -138,22 +138,22 @@ void analysis1_5RoundsAccurate(int r, int n) {
 			}
 
 
-			/* Ã¿ÂÖ±äÁ¿ */
+			/* æ¯è½®å˜é‡ */
 			bitset<16> i_1;
 			for (int i = 1; i <= r; i++) {
 				i_1 = i - 1;
-				// ±¾ÂÖ´ÎÖĞMILP±äÁ¿µÄÆğÊ¼±àÂëÎªi*144
-				// ai, bi, ci, di, ei, fi, RK_i-1, Li, Ri¹²144¸ö±äÁ¿
+				// æœ¬è½®æ¬¡ä¸­MILPå˜é‡çš„èµ·å§‹ç¼–ç ä¸ºi*144
+				// ai, bi, ci, di, ei, fi, RK_i-1, Li, Riå…±144ä¸ªå˜é‡
 				for (int j = 0; j < 144; j++) {
 					X[i * 144 + j] = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
 				}
 
 				for (int j = 0; j < 16; j++) {
 					// RK_2i = K_i, RK_2i+1 = ~K_i
-					if (i % 2 == 1) { // ÆæÊıÂÖ£¬RK_2i = K_i
+					if (i % 2 == 1) { // å¥‡æ•°è½®ï¼ŒRK_2i = K_i
 						model.addConstr(X[i * 144 + 96 + j] == K[((int)((i - 1) / 2)) * 16 + j]);
 					}
-					else // Å¼ÊıÂÖ£¬RK_2i+1 = ~K_i
+					else // å¶æ•°è½®ï¼ŒRK_2i+1 = ~K_i
 					{
 						model.addConstr(X[i * 144 + 96 + j] == 1 - K[((int)(i / 2) - 1) * 16 + j]);
 					}
@@ -204,7 +204,7 @@ void analysis1_5RoundsAccurate(int r, int n) {
 				}
 			}
 
-			/* ÃÜÎÄÔ¼Êø */
+			/* å¯†æ–‡çº¦æŸ */
 			// Lr|Rr = c
 			bitset<16> Lr_bit = Lr, Rr_bit = Rr;
 			for (int i = 15; i >= 0; i--) {
@@ -212,7 +212,7 @@ void analysis1_5RoundsAccurate(int r, int n) {
 				model.addConstr(X[144 * r + 8 * 16 + i] == (int)Rr_bit[15 - i]);
 			}
 
-			// ³¬¼¶¶àÏîÊ½Ô¼Êø
+			// è¶…çº§å¤šé¡¹å¼çº¦æŸ
 			if (r == 3) {
 				// p(x,v)0
 				GRBVar notZero = model.addVar(0.0, 1.0, 1.0, GRB_BINARY);
@@ -334,7 +334,7 @@ void analysis1_5RoundsAccurate(int r, int n) {
 				model.addConstr(pXoro == p_I18_L_0_4);
 			}
 
-			// Çó½â
+			// æ±‚è§£
 			model.set(GRB_DoubleParam_MIPGap, GRB_INFINITY);
 			model.set(GRB_IntParam_PoolSearchMode, 2);
 			model.set(GRB_IntParam_PoolSolutions, 2000000000);
@@ -385,17 +385,17 @@ void analysis1_5RoundsAccurate(int r, int n) {
 			R0--;
 		}
 		catch (GRBException e) {
-			cout << "Gurobi´íÎóÂë£º" << e.getErrorCode() << endl;
+			cout << "Gurobié”™è¯¯ç ï¼š" << e.getErrorCode() << endl;
 			cout << e.getMessage() << endl;
 		}
 		catch (...) {
-			cout << "Î´Öª´íÎó" << endl;
+			cout << "æœªçŸ¥é”™è¯¯" << endl;
 		}
 	}
 	m_file.close();
 	c_file.close();
 
-	// Êä³öÃÜÔ¿
+	// è¾“å‡ºå¯†é’¥
 	int maxcount = 0;
 	auto k_every = countingBox.begin();
 	while (k_every != countingBox.end()) {
@@ -419,10 +419,10 @@ void analysis1_5RoundsAccurate(int r, int n) {
 				K2[i] = (*k_every).first[i + 32];
 				K3[i] = (*k_every).first[i + 48];
 			}
-			printf("K0£º%04X\t", K0);
-			printf("K1£º%04X\t", K1);
-			printf("K2£º%04X\t", K2);
-			printf("K3£º%04X\n", K3);
+			printf("K0ï¼š%04X\t", K0);
+			printf("K1ï¼š%04X\t", K1);
+			printf("K2ï¼š%04X\t", K2);
+			printf("K3ï¼š%04X\n", K3);
 		}
 		k_every++;
 	}

@@ -1,4 +1,4 @@
-#include "CryptographicAlgorithm.h"
+ï»¿#include "CryptographicAlgorithm.h"
 #include <mpi.h>
 #include <iostream>
 #include <map>
@@ -16,42 +16,42 @@ int map2File(string fname, map<uint64_t, uint32_t>* diffs);
 
 int main(int argc, char** argv) {
 	if (argc == 1) {
-		cout << "ÐèÒªÔËÐÐÔÚMPI»·¾³ÏÂ£¡" << endl;
+		cout << "éœ€è¦è¿è¡Œåœ¨MPIçŽ¯å¢ƒä¸‹ï¼" << endl;
 		return 0;
 	}
 	else if (argc != 2) {
-		cout << "ÔËÐÐ·½Ê½£ºmpiexec -n [½ø³ÌÊý] ./a.out [ÂÖÊý]" << endl;
+		cout << "è¿è¡Œæ–¹å¼ï¼šmpiexec -n [è¿›ç¨‹æ•°] ./a.out [è½®æ•°]" << endl;
 		return 0;
 	}
 
-	// ¶ÁÈ¡ÐèÒª±éÀúµÄÂÖÊý
+	// è¯»å–éœ€è¦éåŽ†çš„è½®æ•°
 	int r = atoi(argv[1]);
 
-	// ³õÊ¼»¯Ã÷ÎÄ¶ÔºÍÃÜÔ¿
+	// åˆå§‹åŒ–æ˜Žæ–‡å¯¹å’Œå¯†é’¥
 	uint16_t p[2] = { L0, R0 }, p_[2] = {p[0] ^ diffInL, p[1] ^ diffInR}, c[2] = {0}, c_[2] = {0};
 	uint16_t seedkey[4] = { 0 };
 	uint64_t SeedKey = 0;
 
-	// ³õÊ¼»¯MPI
+	// åˆå§‹åŒ–MPI
 	int world_size, world_rank;
 	MPI_Init(NULL, NULL);
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	// »®·ÖÃ¿¸ö½ø³ÌÐèÒª±éÀúµÄÃÜÔ¿¿Õ¼ä
+	// åˆ’åˆ†æ¯ä¸ªè¿›ç¨‹éœ€è¦éåŽ†çš„å¯†é’¥ç©ºé—´
 	uint64_t v = pow(2, ((int)((r + 1) / 2 ) < 4 ? (int)((r + 1) / 2) : 4) * 16);
-	// map<uint64_t, uint32_t> diffs; // <ÃÜÔ¿, Êä³ö²î·Ö>
+	// map<uint64_t, uint32_t> diffs; // <å¯†é’¥, è¾“å‡ºå·®åˆ†>
 	char filename[32] = { 0 };
 	sprintf(filename, "r%d_th%d.csv", r, world_rank);
 	FILE* fp = fopen(filename, "w");
-	fprintf(fp, "k[3..0], Êä³ö²î·Ö\n");
+	fprintf(fp, "k[3..0], è¾“å‡ºå·®åˆ†\n");
 	uint32_t diff = 0;
 	for (SeedKey = world_rank * (v / world_size); SeedKey < (world_rank + 1) * (v / world_size); SeedKey++) {
 		memcpy((uint16_t*) & seedkey[0], ((uint16_t*) & SeedKey) + 0, 2);
 		memcpy((uint16_t*) & seedkey[1], ((uint16_t*) & SeedKey) + 1, 2);
 		memcpy((uint16_t*) & seedkey[2], ((uint16_t*) & SeedKey) + 2, 2);
 		memcpy((uint16_t*) & seedkey[3], ((uint16_t*) & SeedKey) + 3, 2);
-		// ¼ÓÃÜ
+		// åŠ å¯†
 		Enc(p, c, seedkey, r);
 		Enc(p_, c_, seedkey, r);
 		// diffs[SeedKey] = pow(2, 16) * (c[0] ^ c_[0]) + (c[1] ^ c_[1]);
@@ -60,15 +60,15 @@ int main(int argc, char** argv) {
 	}
 	fclose(fp);
 
-	// Ð´ÈëÎÄ±¾
+	// å†™å…¥æ–‡æœ¬
 	/*char filename[32] = { 0 };
 	sprintf(filename, "r%d_th%d.csv", r, world_rank);
 	map2File(filename, &diffs);*/
 
-	// ½ø³ÌÍ¬²½
+	// è¿›ç¨‹åŒæ­¥
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
-	// cout << "½ø³Ì" << world_rank << "ÍË³ö" << endl;
+	// cout << "è¿›ç¨‹" << world_rank << "é€€å‡º" << endl;
 
 	return 0;
 }
@@ -82,7 +82,7 @@ int map2File(string fname, map<uint64_t, uint32_t>* diffs) {
 	if (!fp) {
 		return -errno;
 	}
-	fprintf(fp, "k[3..0], Êä³ö²î·Ö\n");
+	fprintf(fp, "k[3..0], è¾“å‡ºå·®åˆ†\n");
 	for (map<uint64_t, uint32_t>::iterator it = diffs->begin(); it != diffs->end(); it++) {
 		fprintf(fp, "%016X, %08X\n", it->first, it->second);
 	}

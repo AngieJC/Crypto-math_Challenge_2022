@@ -1,19 +1,19 @@
-#include "CryptographicAlgorithm.h"
+ï»¿#include "CryptographicAlgorithm.h"
 #include <string.h>
 #include <random>
 #include <iostream>
 
-#define mpairs				4096					// Ã÷ÃÜÎÄ¶ÔÊı
-#define analysisRounds		2						// ·ÖÎöµÄÂÖÊı
-#define encRounds			analysisRounds			// ¼ÓÃÜµÄÂÖÊı£¬Ó¦µ±ÓëanalysisRoundsÒ»ÖÂ
+#define mpairs				4096					// æ˜å¯†æ–‡å¯¹æ•°
+#define analysisRounds		2						// åˆ†æçš„è½®æ•°
+#define encRounds			analysisRounds			// åŠ å¯†çš„è½®æ•°ï¼Œåº”å½“ä¸analysisRoundsä¸€è‡´
 #define differentialRounds	analysisRounds - 1
-#define plDifferential		0b0000000000000000		// Ã÷ÎÄ²î·Ö
+#define plDifferential		0b0000000000000000		// æ˜æ–‡å·®åˆ†
 #define prDifferential		0b1000000000000000
-#define d1lDifferential		0b1000000000000000		// ÃÜÎÄ²¿·Ö½âÃÜ(r-1ÂÖ)²î·Ö
+#define d1lDifferential		0b1000000000000000		// å¯†æ–‡éƒ¨åˆ†è§£å¯†(r-1è½®)å·®åˆ†
 #define d1rDifferential		0b0010000100000100
-#define clDifferential		0b0100000000000000		// ÓÉr-1ÂÖ²î·Ö¼ÓÃÜÒ»ÂÖÖ®ºóµÄ²î·Ö£¬ÓÃÓÚ¹ıÂËÃÜÎÄ
+#define clDifferential		0b0100000000000000		// ç”±r-1è½®å·®åˆ†åŠ å¯†ä¸€è½®ä¹‹åçš„å·®åˆ†ï¼Œç”¨äºè¿‡æ»¤å¯†æ–‡
 #define crDifferential		0b1100000000000000
-#define maxKey				0b1111111111111111		// ½âÃÜ1ÂÖÊ±£¬²Â²âµÄÂÖÃÜÔ¿Îª0b0000000000000000µ½0b1111111111111111
+#define maxKey				0b1111111111111111		// è§£å¯†1è½®æ—¶ï¼ŒçŒœæµ‹çš„è½®å¯†é’¥ä¸º0b0000000000000000åˆ°0b1111111111111111
 
 using namespace std;
 
@@ -28,7 +28,7 @@ void init_prng_mt() {
 }
 
 int main(int argc, char** argv) {
-	// psÎªÃ÷ÎÄ£¬csÎªÃÜÎÄ£¬msÎªcs½âÃÜµÄÃ÷ÎÄ
+	// psä¸ºæ˜æ–‡ï¼Œcsä¸ºå¯†æ–‡ï¼Œmsä¸ºcsè§£å¯†çš„æ˜æ–‡
 	uint32_t ps[mpairs] = { 0 };
 	unsigned int initial_seed = time(NULL);
 	init_prng_mt();
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 	uint32_t cs[mpairs] = { 0 }, cs_[mpairs] = { 0 };
 	uint16_t p[2], c[2], c_[2];
 	uint16_t seedkey[4] = { dis2(gen), dis2(gen), dis2(gen), dis2(gen) };
-	printf("ÕæÊµÃÜÔ¿£º%04X%04X%04X%04X\n", seedkey[0], seedkey[1], seedkey[2], seedkey[3]);
+	printf("çœŸå®å¯†é’¥ï¼š%04X%04X%04X%04X\n", seedkey[0], seedkey[1], seedkey[2], seedkey[3]);
 	uint32_t survivedc[mpairs] = { 0 }, survivedc_[mpairs] = { 0 }, survivedCount = 0;
 	uint16_t dec1rm[2], dec1rm_[2];
 	int guessKs[maxKey] = { 0 };
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 	uint16_t p_test[2], p_test_[2], c_test[2], c_test_[2];
 	uint16_t seedkey_test[4];
 	int rightPairCount = 0;
-	// ËùÓĞÃ÷ÎÄ¶Ô¼ÓÃÜ
+	// æ‰€æœ‰æ˜æ–‡å¯¹åŠ å¯†
 	for (int i = 0; i < mpairs; i++) {
 		memcpy(&p[0], ((uint16_t*)&ps[i]) + 1, 2);
 		memcpy(&p[1], ((uint16_t*)&ps[i]), 2);
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 		memcpy((uint16_t*)&cs_[i], &c_[1], 2);
 	}
 
-	// ¹ıÂË
+	// è¿‡æ»¤
 	for (int i = 0; i < mpairs; i++) {
 		memcpy(&c[0], (uint16_t*)&cs[i] + 1, 2);
 		memcpy(&c[1], (uint16_t*)&cs[i], 2);
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// ½âÃÜ1ÂÖ
+	// è§£å¯†1è½®
 	for (int i = 0; i < mpairs; i++) {
 		memcpy(&c[0], (uint16_t*)&cs[i] + 1, 2);
 		memcpy(&c[1], (uint16_t*)&cs[i], 2);
@@ -94,20 +94,20 @@ int main(int argc, char** argv) {
 			maxcountK = i;
 		}
 	}
-	printf("²Â²âÃÜÔ¿£º%04X\n", maxcountK);
-	printf("Í³¼Æ´ÎÊı£º%d\n\n", maxcount);
+	printf("çŒœæµ‹å¯†é’¥ï¼š%04X\n", maxcountK);
+	printf("ç»Ÿè®¡æ¬¡æ•°ï¼š%d\n\n", maxcount);
 
-	// ²âÊÔr-1ÂÖ¼ÓÃÜÊÇ·ñÒÔÌØ¶¨¸ÅÂÊ³öÏÖÄ¿±ê²î·Ö
-	printf("%dÂÖ¼ÓÃÜÑéÖ¤\n", analysisRounds - 1);
-	// Ã÷ÎÄËæ»ú£¬ÃÜÔ¿Ëæ»ú
-	printf("Ã÷ÎÄËæ»ú£¬ÃÜÔ¿Ëæ»ú£¬ÖØ¸´%d´Î\n", mpairs);
+	// æµ‹è¯•r-1è½®åŠ å¯†æ˜¯å¦ä»¥ç‰¹å®šæ¦‚ç‡å‡ºç°ç›®æ ‡å·®åˆ†
+	printf("%dè½®åŠ å¯†éªŒè¯\n", analysisRounds - 1);
+	// æ˜æ–‡éšæœºï¼Œå¯†é’¥éšæœº
+	printf("æ˜æ–‡éšæœºï¼Œå¯†é’¥éšæœºï¼Œé‡å¤%dæ¬¡\n", mpairs);
 	for (int i = 0; i < mpairs; i++) {
-		// Ã÷ÎÄËæ»ú
+		// æ˜æ–‡éšæœº
 		memcpy(&p_test[0], ((uint16_t*)&ps[i]) + 1, 2);
 		memcpy(&p_test[1], ((uint16_t*)&ps[i]), 2);
 		p_test_[0] = p_test[0] ^ plDifferential;
 		p_test_[1] = p_test[1] ^ prDifferential;
-		// ÃÜÔ¿Ëæ»ú
+		// å¯†é’¥éšæœº
 		seedkey_test[0] = dis(gen);
 		seedkey_test[1] = dis(gen);
 		seedkey_test[2] = dis(gen);
@@ -122,12 +122,12 @@ int main(int argc, char** argv) {
 			//printf("%04X%04X%04X%04X\n", seedkey_test[0], seedkey_test[1], seedkey_test[2], seedkey_test[3]);
 		}
 	}
-	printf("Ã÷ÃÜÎÄ²î·Ö¾ù·ûºÏ²î·Ö¶ÔÊı£º%d£¬¸ÅÂÊ£º%0.4f\n", rightPairCount, (float)((float)rightPairCount / mpairs));
+	printf("æ˜å¯†æ–‡å·®åˆ†å‡ç¬¦åˆå·®åˆ†å¯¹æ•°ï¼š%dï¼Œæ¦‚ç‡ï¼š%0.4f\n", rightPairCount, (float)((float)rightPairCount / mpairs));
 
-	//// Ã÷ÎÄËæ»ú£¬ÃÜÔ¿¹Ì¶¨
-	//printf("Ã÷ÎÄËæ»ú£¬ÃÜÔ¿¹Ì¶¨(Ëæ»úÖ¸¶¨ÇÒ²»ÔÙ±ä»¯)£¬ÖØ¸´%d´Î\n", mpairs);
+	//// æ˜æ–‡éšæœºï¼Œå¯†é’¥å›ºå®š
+	//printf("æ˜æ–‡éšæœºï¼Œå¯†é’¥å›ºå®š(éšæœºæŒ‡å®šä¸”ä¸å†å˜åŒ–)ï¼Œé‡å¤%dæ¬¡\n", mpairs);
 	//rightPairCount = 0;
-	//// ÃÜÔ¿¹Ì¶¨
+	//// å¯†é’¥å›ºå®š
 	//seedkey_test[0] = dis2(gen);
 	//seedkey_test[1] = dis2(gen);
 	//seedkey_test[2] = dis2(gen);
@@ -143,12 +143,12 @@ int main(int argc, char** argv) {
 	//		rightPairCount++;
 	//	}
 	//}
-	//printf("Ã÷ÃÜÎÄ²î·Ö¾ù·ûºÏ²î·Ö¶ÔÊı£º%d£¬¸ÅÂÊ£º%0.4f\n", rightPairCount, (float)((float)rightPairCount / mpairs));
+	//printf("æ˜å¯†æ–‡å·®åˆ†å‡ç¬¦åˆå·®åˆ†å¯¹æ•°ï¼š%dï¼Œæ¦‚ç‡ï¼š%0.4f\n", rightPairCount, (float)((float)rightPairCount / mpairs));
 
-	//// Ã÷ÎÄËæ»ú£¬ÃÜÔ¿ÕæÊµ
-	//printf("Ã÷ÎÄËæ»ú£¬ÃÜÔ¿ÕæÊµ(Ä£ÄâÕæÊµ·ÖÎöÇé¿ö)£¬ÖØ¸´%d´Î\n", mpairs);
+	//// æ˜æ–‡éšæœºï¼Œå¯†é’¥çœŸå®
+	//printf("æ˜æ–‡éšæœºï¼Œå¯†é’¥çœŸå®(æ¨¡æ‹ŸçœŸå®åˆ†ææƒ…å†µ)ï¼Œé‡å¤%dæ¬¡\n", mpairs);
 	//rightPairCount = 0;
-	//// ÃÜÔ¿ÕæÊµ
+	//// å¯†é’¥çœŸå®
 	//seedkey_test[0] = seedkey[0];
 	//seedkey_test[1] = seedkey[1];
 	//seedkey_test[2] = seedkey[2];
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
 	//		rightPairCount++;
 	//	}
 	//}
-	//printf("Ã÷ÃÜÎÄ²î·Ö¾ù·ûºÏ²î·Ö¶ÔÊı£º%d£¬¸ÅÂÊ£º%0.4f\n\n", rightPairCount, (float)((float)rightPairCount / mpairs));
+	//printf("æ˜å¯†æ–‡å·®åˆ†å‡ç¬¦åˆå·®åˆ†å¯¹æ•°ï¼š%dï¼Œæ¦‚ç‡ï¼š%0.4f\n\n", rightPairCount, (float)((float)rightPairCount / mpairs));
 
 	return 0;
 }
