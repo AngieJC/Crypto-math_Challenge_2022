@@ -46,8 +46,8 @@ int main() {
 		cin >> round;
 		seedkey[0] = 0x0123;
 		seedkey[1] = 0x4567;
-		seedkey[2] = 0x0000;
-		seedkey[3] = 0x0000;
+		seedkey[2] = 0x89ab;
+		seedkey[3] = 0xcdef;
 		ifstream ms;
 		ms.open("m.txt", ios::in | ios::app);
 		string line;
