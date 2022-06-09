@@ -17,7 +17,10 @@ using namespace std;
 using namespace std::chrono;
 
 void And(GRBModel * m, GRBVar* a, GRBVar* b, GRBVar* c);
+GRBVar* And(GRBModel * m, GRBVar* a, GRBVar* b);
 void Xor(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c);
+GRBVar* Xor(GRBModel* m, GRBVar* a, GRBVar* b);
+GRBVar* GetNOT(GRBModel* m, GRBVar* a);
 
 void analysis1_5Rounds(int r) {
 	uint16_t L0 = 0xffff, R0 = 0xffff, Lr = 0, Rr = 0;
@@ -235,6 +238,44 @@ void analysis1_5Rounds(int r) {
 			Xor(&model, &k1Xork10, &k4Andk17Andk20, &k1Xork10Xork4Andk17Andk20);
 			model.addConstr(k1Xork10Xork4Andk17Andk20 == p_I26_R_1_3);
 		}
+		else if (r == 4) {
+			int p_I2_R_0_4, p_I18_L_0_4;
+			cout << "分别对以下明文进行加密：" << endl;
+			cout << "00000000" << endl << "20000000" << endl << "00002000" << endl;
+			cout << "输入对应密文：" << endl;
+			uint32_t c0, c1, c2;
+			cin >> c0 >> c1 >> c2;
+			p_I2_R_0_4 = ((c0 & 0x00008000) ^ (c1 & 0x00008000)) ? 1 : 0;
+			p_I18_L_0_4 = ((c0 & 0x80000000) ^ (c2 & 0x80000000)) ? 1 : 0;
+
+			// p(x,v)=k_2 k_9 k_16 + k_18 + !k_9 k_16 k_25 + !k_9 + k_2 k_16 k_25 + k_2 k_9 !k_25 + !k_25 + k_16 + k_2 !k_12 k_28 + k_2 !k_6 k_22
+			GRBVar* not6 = GetNOT(&model, &K[6]);
+			GRBVar* not9 = GetNOT(&model, &K[9]);
+			GRBVar* not12 = GetNOT(&model, &K[12]);
+			GRBVar* not25 = GetNOT(&model, &K[25]);
+			GRBVar* k2Andk9 = And(&model, &K[2], &K[9]);
+			GRBVar* k2Andk9Andk16 = And(&model, k2Andk9, &K[16]);
+			GRBVar* k2Andk9Andk16Xork18 = Xor(&model, k2Andk9Andk16, &K[18]);
+			GRBVar* k9Andk16 = And(&model, not9, &K[16]);
+			GRBVar* k9Andk16Andk25 = And(&model, k9Andk16, &K[25]);
+			GRBVar* k2Andk9Andk16Xork18Xork9Andk16Andk25 = Xor(&model, k2Andk9Andk16Xork18, k9Andk16Andk25);
+			GRBVar* k2Andk9Andk16Xork18Xork9Andk16Andk25Xork9 = Xor(&model, k2Andk9Andk16Xork18Xork9Andk16Andk25, not9);
+			GRBVar* k2Andk16 = And(&model, &K[2], &K[16]);
+			GRBVar* e = And(&model, k2Andk16, &K[25]);
+			// GRBVar* k2Andk9 = And(&model, &K[2], &K[9]);
+			GRBVar* f = And(&model, k2Andk9, not25);
+			GRBVar* k2Andk12 = And(&model, not12, &K[2]);
+			GRBVar* i = And(&model, k2Andk12, &K[28]);
+			GRBVar* k2Andk6 = And(&model, not6, &K[2]);
+			GRBVar* j = And(&model, k2Andk6, &K[22]);
+			GRBVar* dXore = Xor(&model, k2Andk9Andk16Xork18Xork9Andk16Andk25Xork9, e);
+			GRBVar* eXorf = Xor(&model, dXore, f);
+			GRBVar* fXorg = Xor(&model, f, not25);
+			GRBVar* gXorh = Xor(&model, fXorg, &K[16]);
+			GRBVar* hXori = Xor(&model, gXorh, i);
+			GRBVar* iXorj = Xor(&model, hXori, j);
+			model.addConstr(*iXorj == p_I2_R_0_4);
+		}
 
 		// 求解
 		model.set(GRB_DoubleParam_MIPGap, GRB_INFINITY);
@@ -316,9 +357,36 @@ void And(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c) {
 	m->addQConstr(*c == (*a) * (*b));
 }
 
+inline GRBVar* And(GRBModel* m, GRBVar* a, GRBVar* b)
+{
+	GRBVar temp = m->addVar(0.0, 1.0, 1.0, GRB_BINARY);
+	GRBVar * c = &temp;
+	m->addQConstr(*c == (*a) * (*b));
+	return c;
+}
+
 void Xor(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c) {
 	m->addConstr(*c >= *a - *b);
 	m->addConstr(*c >= *b - *a);
 	m->addConstr(*c <= *b + *a);
 	m->addConstr(*c <= 2 - *b - *a);
+}
+
+inline GRBVar* Xor(GRBModel* m, GRBVar* a, GRBVar* b)
+{
+	GRBVar temp = m->addVar(0.0, 1.0, 1.0, GRB_BINARY);
+	GRBVar* c = &temp;
+	m->addConstr(*c >= *a - *b);
+	m->addConstr(*c >= *b - *a);
+	m->addConstr(*c <= *b + *a);
+	m->addConstr(*c <= 2 - *b - *a);
+	return c;
+}
+
+inline GRBVar* GetNOT(GRBModel* m, GRBVar* a)
+{
+	GRBVar temp = m->addVar(0.0, 1.0, 1.0, GRB_BINARY);
+	GRBVar* NOTa = &temp;
+	m->addConstr(*NOTa == 1 - *a);
+	return NOTa;
 }
