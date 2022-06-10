@@ -15,34 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="1Round.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Rounds.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="2Rounds.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <ClCompile Include="Decoder.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="CryptographicAlgorithm.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CubeAttack.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CubeAttackAccurate.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="3-4Rounds.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MITM.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Analysis.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

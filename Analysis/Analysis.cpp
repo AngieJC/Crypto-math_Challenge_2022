@@ -28,9 +28,11 @@ int main() {
 	case 3:
 	case 4:
 	case 5:
-	case 6:
 		// cubeAttack(r);
 		cubeAttackAccurate(r, 4);
+		break;
+	case 6:
+		MITM(r);
 		break;
 	default:
 		if (r > 6) {
