@@ -31,7 +31,7 @@ struct cmpBitset288 {
 	}
 };
 
-void analysis1_5RoundsAccurate(int r, int n) {
+void cubeAttackAccurate(int r, int n) {
 	// 命名规则：p_I[立方]_[左半/右半]_[索引]_[轮数]
 	int p_I3_R_0_3, p_I9_R_0_3, p_I10_R_1_3, p_I19_L_0_3, p_I25_L_0_3, p_I26_R_1_3;
 	uint32_t c0, c1, c2, c3, c4, c5, c6;

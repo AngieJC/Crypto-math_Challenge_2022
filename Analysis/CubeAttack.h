@@ -22,7 +22,7 @@ void Xor(GRBModel* m, GRBVar* a, GRBVar* b, GRBVar* c);
 GRBVar Xor(GRBModel* m, GRBVar* a, GRBVar* b);
 GRBVar GetNOT(GRBModel* m, GRBVar* a);
 
-void analysis1_5Rounds(int r) {
+void cubeAttack(int r) {
 	uint16_t L0 = 0x1111, R0 = 0x1111, Lr = 0, Rr = 0;
 	uint32_t c = 0;
 	cout << "加密11111111" << endl;

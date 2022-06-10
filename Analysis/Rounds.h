@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "1Round.h"
-#include "2Rounds.h"
-#include "3-4Rounds.h"
-#include "1-5Rounds.h"
-#include "1-5RoundsAccurate.h"
+#include "1Round.h"					// 1. 利用确定的中间变量直接恢复密钥
+#include "2Rounds.h"				// 2. 精确差分攻击
+#include "3-4Rounds.h"				// 3. 立方攻击后遍历密钥，效果并不好，弃用
+#include "CubeAttack.h"				// 4. 立方攻击后将超级多项式作为约束添加到MILP中
+#include "CubeAttackAccurate.h"		// 5. 在4的基础上多次MILP求解得到唯一密钥

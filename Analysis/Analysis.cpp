@@ -29,8 +29,8 @@ int main() {
 	case 4:
 	case 5:
 	case 6:
-		// analysis1_5Rounds(r);
-		analysis1_5RoundsAccurate(r, 4);
+		// cubeAttack(r);
+		cubeAttackAccurate(r, 4);
 		break;
 	default:
 		if (r > 6) {
