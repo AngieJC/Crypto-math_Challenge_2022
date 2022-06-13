@@ -69,3 +69,25 @@ void Enc(u16 pt[], u16 ct[], u16 seedkey[], int round)//加密函数，pt为明�
 	}
 	ct[0] = s[0]; ct[1] = s[1];
 }
+
+void Dec(u16 pt[], u16 ct[], u16 seedkey[], int round, int decRound) {
+	u16 s[2];
+	u16 roundkey[TOTALROUND];
+	int r;
+
+	if (round > TOTALROUND)
+	{
+		printf("error: 密钥扩展轮数小于总轮数，请更改头文件第15行使TOTALROUND的值大于总轮数\n");
+		return;
+	}
+
+	KeySchedual(seedkey, roundkey);
+
+	s[0] = ct[1]; s[1] = ct[0];
+	for (r = round - 1; r >= round - decRound; r--)
+	{
+		RoundFun(s, roundkey, r);
+		// 		printf("%.4x %.4x\n",s[0],s[1]);
+	}
+	pt[0] = s[1]; pt[1] = s[0];
+}

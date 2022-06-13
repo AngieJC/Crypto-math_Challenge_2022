@@ -26,9 +26,13 @@ int main() {
 		analysis2Rounds();
 		break;
 	case 3:
+		cubeAttackAccurate(r, 4);
+		break;
 	case 4:
+		MITM(r);
+		// cubeAttackAccurate(r, 4);
+		break;
 	case 5:
-		// cubeAttack(r);
 		cubeAttackAccurate(r, 4);
 		break;
 	case 6:
