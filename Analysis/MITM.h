@@ -38,14 +38,16 @@ void MITM(int r) {
 
 void MITM4()
 {
-	cout << "加密0xffffffff" << endl;
+	cout << "加密：\nffffffff\n11111111" << endl;
 	cout << "输入对应密文：" << endl;
 	cin.setf(ios_base::hex, ios_base::basefield);
-	uint32_t c_;
-	cin >> c_;
-	u16 c[2];
+	uint32_t c_, c_verify_;
+	cin >> c_ >> c_verify_;
+	u16 c[2], c_verify[2];
 	memcpy(c, (u16*)( & c_) + 1, 2);
 	memcpy(c + 1, (u16*)( & c_), 2);
+	memcpy(c_verify, (u16*)(&c_verify_) + 1, 2);
+	memcpy(c_verify + 1, (u16*)(&c_verify_), 2);
 	
 	auto start = high_resolution_clock::now(); // 开始计时
 	// 建表
@@ -76,20 +78,23 @@ void MITM4()
 	}
 
 	// 查表
-	u16 p2[2]; // p2是解密2轮后的中间变量
+	u16 p2[2], p_verify_now[2] = {0x1111, 0x1111}, c_verify_now[2]; // p2是解密2轮后的中间变量
 	i = 0;
 	uint32_t p2_ = 0; // p2_是p2左右拼接起来
+	printf("------------------------\n");
 	for (guesskey[1] = 0, i = 0; i < 0xffff; guesskey[1]++, i++) {
 		Dec(p2, c, guesskey, 4, 2);
 		memcpy(((u16*)&p2_) + 1, &p2[0], 2);
 		memcpy(&p2_, &p2[1], 2);
 		if (cAndKeys.find(p2_) != cAndKeys.end()) {
-			// 命中，输出k0, k1
-			printf("----------------\n");
-			printf("K1: %04x\nK0: \n", guesskey[1]);
+			// 命中，验证k0, k1
 			KeyNode* temp = cAndKeys[p2_];
 			while (temp) {
-				printf("%04x\n", temp->k);
+				guesskey[0] = temp->k;
+				Enc(p_verify_now, c_verify_now, guesskey, 4);
+				if (c_verify_now[0] == c_verify[0] && c_verify_now[1] == c_verify[1]) {
+					printf("K0:%04x\tK1:%04x\n", guesskey[0], guesskey[1]);
+				}
 				temp = temp->next;
 			}
 		}
@@ -101,16 +106,18 @@ void MITM4()
 
 void MITM6()
 {
-	cout << "加密：\n0x00000000\n0xffffffff" << endl;
+	cout << "加密：\n00000000\nffffffff\n11111111" << endl;
 	cout << "输入对应密文：" << endl;
 	cin.setf(ios_base::hex, ios_base::basefield);
-	uint32_t c_, c_verify_;
-	cin >> c_ >> c_verify_;
-	u16 c[2], c_verify[2], p_verify[2] = {0xffff, 0xffff};
+	uint32_t c_, c_verify_, c_verify_2;
+	cin >> c_ >> c_verify_ >> c_verify_2;
+	u16 c[2], c_verify[2], c_verify2[2];
 	memcpy(c, (u16*)(&c_) + 1, 2);
 	memcpy(c + 1, (u16*)(&c_), 2);
 	memcpy(c_verify, (u16*)(&c_verify_) + 1, 2);
 	memcpy(c_verify + 1, (u16*)(&c_verify_), 2);
+	memcpy(c_verify2, (u16*)(&c_verify_2) + 1, 2);
+	memcpy(c_verify2 + 1, (u16*)(&c_verify_2), 2);
 
 	auto start = high_resolution_clock::now(); // 开始计时
 	// 建表
@@ -166,29 +173,45 @@ void MITM6()
 			}
 		}
 	}
-
+	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
+	vector<Key*> accurateKeys;
+	Key* temp;
 	for (int i = 0; i < keys.size(); i++) {
 		Key* nowKey = keys[i];
 		u16 area1, area2, area3, area4;
 		for (area1 = 0; area1 <= 1; area1++) {
-			// guesskey[0] = nowKey->k[0] ^ area1;
 			for (area2 = 0; area2 <= 0b1111; area2++) {
-				// guesskey[0] ^= (area2 << 2);
 				for (area3 = 0; area3 <= 0b11111; area3++) {
-					// guesskey[0] ^= (area3 << 7);
 					for (area4 = 0; area4 <= 0b111; area4++) {
-						// guesskey[0] ^= (area4 << 13);
 						guesskey[0] = nowKey->k[0] ^ area1 ^ (area2 << 2) ^ (area3 << 7) ^ (area4 << 13);
 						guesskey[1] = nowKey->k[1];
 						guesskey[2] = nowKey->k[2];
 						Enc(p_verify_now, c_verify_now, guesskey, 6);
 						if (c_verify_now[0] == c_verify[0] && c_verify_now[1] == c_verify[1]) {
-							printf("K0:%04x\tK1:%04x\tK2:%04x\n", guesskey[0], guesskey[1], guesskey[2]);
+							// printf("K0:%04x\tK1:%04x\tK2:%04x\n", guesskey[0], guesskey[1], guesskey[2]);
+							temp = (Key*)malloc(sizeof(Key));
+							temp->k[0] = guesskey[0];
+							temp->k[1] = guesskey[1];
+							temp->k[2] = guesskey[2];
+							accurateKeys.insert(end(accurateKeys), temp);
 						}
 					}
 				}
 			}
+		}
+	}
+	// 第二次验证
+	printf("------------------------\n");
+	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
+	for (int i = 0; i < accurateKeys.size(); i++) {
+		Key* nowKey = accurateKeys[i];
+		guesskey[0] = nowKey->k[0];
+		guesskey[1] = nowKey->k[1];
+		guesskey[2] = nowKey->k[2];
+		Enc(p_verify_now2, c_verify_now2, guesskey, 6);
+		if (c_verify_now2[0] == c_verify2[0] && c_verify_now2[1] == c_verify2[1]) {
+			printf("K0:%04x\tK1:%04x\tK2:%04x\n", guesskey[0], guesskey[1], guesskey[2]);
 		}
 	}
 	
