@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -14,12 +14,12 @@
 
 #include "CryptographicAlgorithm.h"
 
-struct KeyNode { // Ã¿Ò»¸ö¼ü¶ÔÓ¦Ò»¸öÁ´±í£¬Á´±í½Úµã´æ´¢¿ÉĞĞÃÜÔ¿ºÍÏÂÒ»¸ö¿ÉĞĞÃÜÔ¿µÄÖ¸Õë
+struct KeyNode { // æ¯ä¸€ä¸ªé”®å¯¹åº”ä¸€ä¸ªé“¾è¡¨ï¼Œé“¾è¡¨èŠ‚ç‚¹å­˜å‚¨å¯è¡Œå¯†é’¥å’Œä¸‹ä¸€ä¸ªå¯è¡Œå¯†é’¥çš„æŒ‡é’ˆ
 	u16 k = 0;
 	KeyNode* next = NULL;
 };
 
-struct Key { // 6ÂÖÖĞËùÓĞ¿ÉĞĞµÄÃÜÔ¿
+struct Key { // 6è½®ä¸­æ‰€æœ‰å¯è¡Œçš„å¯†é’¥
 	u16 k[4] = { 0 };
 	// Key* next = NULL;
 };
@@ -41,8 +41,8 @@ void MITM(int r) {
 
 void MITM4()
 {
-	cout << "¼ÓÃÜ£º\nffffffff\n11111111" << endl;
-	cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+	cout << "åŠ å¯†ï¼š\nffffffff\n11111111" << endl;
+	cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 	cin.setf(ios_base::hex, ios_base::basefield);
 	uint32_t c_, c_verify_;
 	cin >> c_ >> c_verify_;
@@ -52,19 +52,19 @@ void MITM4()
 	memcpy(c_verify, (u16*)(&c_verify_) + 1, 2);
 	memcpy(c_verify + 1, (u16*)(&c_verify_), 2);
 
-	auto start = high_resolution_clock::now(); // ¿ªÊ¼¼ÆÊ±
-	// ½¨±í
+	auto start = high_resolution_clock::now(); // å¼€å§‹è®¡æ—¶
+	// å»ºè¡¨
 	unordered_map<uint32_t, KeyNode*> cAndKeys;
-	u16 p[2] = { 0xffff, 0xffff }, c2[2]; // c2ÊÇ¼ÓÃÜ2ÂÖºóµÄÖĞ¼ä±äÁ¿
+	u16 p[2] = { 0xffff, 0xffff }, c2[2]; // c2æ˜¯åŠ å¯†2è½®åçš„ä¸­é—´å˜é‡
 	u16 guesskey[4] = { 0x0000 };
 	int i = 0;
-	uint32_t c2_ = 0; // c2_ÊÇc2×óÓÒÆ´½ÓÆğÀ´
+	uint32_t c2_ = 0; // c2_æ˜¯c2å·¦å³æ‹¼æ¥èµ·æ¥
 	for (guesskey[0] = 0, i = 0; i <= 0xffff; guesskey[0]++, i++) {
 		Enc(p, c2, guesskey, 2);
 		memcpy(((u16*)&c2_) + 1, &c2[0], 2);
 		memcpy(&c2_, &c2[1], 2);
 		if (cAndKeys.find(c2_) == cAndKeys.end()) {
-			// ¼üµÚÒ»´Î³öÏÖ
+			// é”®ç¬¬ä¸€æ¬¡å‡ºç°
 			cAndKeys[c2_] = (KeyNode*)malloc(sizeof(KeyNode));
 			cAndKeys[c2_]->k = guesskey[0];
 			cAndKeys[c2_]->next = NULL;
@@ -80,17 +80,17 @@ void MITM4()
 		}
 	}
 
-	// ²é±í
-	u16 p2[2], p_verify_now[2] = { 0x1111, 0x1111 }, c_verify_now[2]; // p2ÊÇ½âÃÜ2ÂÖºóµÄÖĞ¼ä±äÁ¿
+	// æŸ¥è¡¨
+	u16 p2[2], p_verify_now[2] = { 0x1111, 0x1111 }, c_verify_now[2]; // p2æ˜¯è§£å¯†2è½®åçš„ä¸­é—´å˜é‡
 	i = 0;
-	uint32_t p2_ = 0; // p2_ÊÇp2×óÓÒÆ´½ÓÆğÀ´
+	uint32_t p2_ = 0; // p2_æ˜¯p2å·¦å³æ‹¼æ¥èµ·æ¥
 	printf("------------------------\n");
 	for (guesskey[1] = 0, i = 0; i < 0xffff; guesskey[1]++, i++) {
 		Dec(p2, c, guesskey, 4, 2);
 		memcpy(((u16*)&p2_) + 1, &p2[0], 2);
 		memcpy(&p2_, &p2[1], 2);
 		if (cAndKeys.find(p2_) != cAndKeys.end()) {
-			// ÃüÖĞ£¬ÑéÖ¤k0, k1
+			// å‘½ä¸­ï¼ŒéªŒè¯k0, k1
 			KeyNode* temp = cAndKeys[p2_];
 			while (temp) {
 				guesskey[0] = temp->k;
@@ -109,8 +109,8 @@ void MITM4()
 
 void MITM5_6(int r)
 {
-	cout << "¼ÓÃÜ£º\n00000000\nffffffff\n11111111" << endl;
-	cout << "ÊäÈë¶ÔÓ¦ÃÜÎÄ£º" << endl;
+	cout << "åŠ å¯†ï¼š\n00000000\nffffffff\n11111111" << endl;
+	cout << "è¾“å…¥å¯¹åº”å¯†æ–‡ï¼š" << endl;
 	cin.setf(ios_base::hex, ios_base::basefield);
 	uint32_t c_, c_verify_, c_verify_2;
 	cin >> c_ >> c_verify_ >> c_verify_2;
@@ -122,18 +122,18 @@ void MITM5_6(int r)
 	memcpy(c_verify2, (u16*)(&c_verify_2) + 1, 2);
 	memcpy(c_verify2 + 1, (u16*)(&c_verify_2), 2);
 
-	auto start = high_resolution_clock::now(); // ¿ªÊ¼¼ÆÊ±
-	// ½¨±í
+	auto start = high_resolution_clock::now(); // å¼€å§‹è®¡æ—¶
+	// å»ºè¡¨
 	unordered_map<uint32_t, KeyNode*> cAndKeys;
-	u16 p2[2], guesskey[4] = { 0x0000 }; // p2ÊÇ½âÃÜ2ÂÖºóµÄÖĞ¼ä±äÁ¿
-	uint32_t p2_; // p2_ÊÇp2×óÓÒÆ´½ÓÆğÀ´
+	u16 p2[2], guesskey[4] = { 0x0000 }; // p2æ˜¯è§£å¯†2è½®åçš„ä¸­é—´å˜é‡
+	uint32_t p2_; // p2_æ˜¯p2å·¦å³æ‹¼æ¥èµ·æ¥
 	int i = 0;
 	for (; i < 0xffff; i++, guesskey[2]++) {
 		Dec(p2, c, guesskey, r, r - 4);
 		memcpy(((u16*)&p2_) + 1, &p2[0], 2);
 		memcpy(&p2_, &p2[1], 2);
 		if (cAndKeys.find(p2_) == cAndKeys.end()) {
-			// ¼üµÚÒ»´Î³öÏÖ
+			// é”®ç¬¬ä¸€æ¬¡å‡ºç°
 			cAndKeys[p2_] = (KeyNode*)malloc(sizeof(KeyNode));
 			cAndKeys[p2_]->k = guesskey[2];
 			cAndKeys[p2_]->next = NULL;
@@ -149,10 +149,10 @@ void MITM5_6(int r)
 		}
 	}
 
-	// ²é±í
+	// æŸ¥è¡¨
 	vector<Key*> keys;
-	u16 p[2] = { 0x0000, 0x0000 }, c4[2]; // c4ÊÇ¼ÓÃÜ4ÂÖºóµÄÖĞ¼ä±äÁ¿
-	uint32_t c4_ = 0; // c4_ÊÇc4×óÓÒÆ´½ÓÆğÀ´
+	u16 p[2] = { 0x0000, 0x0000 }, c4[2]; // c4æ˜¯åŠ å¯†4è½®åçš„ä¸­é—´å˜é‡
+	uint32_t c4_ = 0; // c4_æ˜¯c4å·¦å³æ‹¼æ¥èµ·æ¥
 	u16 possibleK0[8] = { 0b0000000000000000, 0b0000000000000010, 0b0000000001000000, 0b0000000001000010, 0b0001000000000010, 0b0001000001000000, 0b0001000001000000, 0b0001000001000010 };
 	for (int j = 0; j < 8; j++) {
 		guesskey[0] = possibleK0[j];
@@ -163,7 +163,7 @@ void MITM5_6(int r)
 			memcpy(((u16*)&c4_) + 1, &c4[0], 2);
 			memcpy(&c4_, &c4[1], 2);
 			if (cAndKeys.find(c4_) != cAndKeys.end()) {
-				// ÃüÖĞ£¬Ôİ´æk0, k1, k2
+				// å‘½ä¸­ï¼Œæš‚å­˜k0, k1, k2
 				KeyNode* temp1 = cAndKeys[c4_];
 				while (temp1) {
 					Key* temp2 = (Key*)malloc(sizeof(Key));
@@ -176,7 +176,7 @@ void MITM5_6(int r)
 			}
 		}
 	}
-	// µÚÒ»´ÎÑéÖ¤
+	// ç¬¬ä¸€æ¬¡éªŒè¯
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
 	vector<Key*> accurateKeys;
 	Key* temp;
@@ -204,7 +204,7 @@ void MITM5_6(int r)
 			}
 		}
 	}
-	// µÚ¶ş´ÎÑéÖ¤
+	// ç¬¬äºŒæ¬¡éªŒè¯
 	printf("------------------------\n");
 	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
 	for (int i = 0; i < accurateKeys.size(); i++) {
