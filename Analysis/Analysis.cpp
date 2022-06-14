@@ -33,7 +33,8 @@ int main() {
 		// cubeAttackAccurate(r, 4);
 		break;
 	case 5:
-		cubeAttackAccurate(r, 4);
+		MITM(r);
+		// cubeAttackAccurate(r, 4);
 		break;
 	case 6:
 		MITM(r);

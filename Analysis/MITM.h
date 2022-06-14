@@ -25,14 +25,17 @@ struct Key { // 6轮中所有可行的密钥
 };
 
 void MITM4();
-void MITM6();
+void MITM5_6(int r);
 
 void MITM(int r) {
 	if (r == 4) {
 		MITM4();
 	}
+	else if (r == 5) {
+		MITM5_6(r);
+	}
 	else if (r == 6) {
-		MITM6();
+		MITM5_6(r);
 	}
 }
 
@@ -44,22 +47,22 @@ void MITM4()
 	uint32_t c_, c_verify_;
 	cin >> c_ >> c_verify_;
 	u16 c[2], c_verify[2];
-	memcpy(c, (u16*)( & c_) + 1, 2);
-	memcpy(c + 1, (u16*)( & c_), 2);
+	memcpy(c, (u16*)(&c_) + 1, 2);
+	memcpy(c + 1, (u16*)(&c_), 2);
 	memcpy(c_verify, (u16*)(&c_verify_) + 1, 2);
 	memcpy(c_verify + 1, (u16*)(&c_verify_), 2);
-	
+
 	auto start = high_resolution_clock::now(); // 开始计时
 	// 建表
 	unordered_map<uint32_t, KeyNode*> cAndKeys;
 	u16 p[2] = { 0xffff, 0xffff }, c2[2]; // c2是加密2轮后的中间变量
-	u16 guesskey[4] = {0x0000};
+	u16 guesskey[4] = { 0x0000 };
 	int i = 0;
 	uint32_t c2_ = 0; // c2_是c2左右拼接起来
 	for (guesskey[0] = 0, i = 0; i <= 0xffff; guesskey[0]++, i++) {
 		Enc(p, c2, guesskey, 2);
 		memcpy(((u16*)&c2_) + 1, &c2[0], 2);
-		memcpy(&c2_ , &c2[1], 2);
+		memcpy(&c2_, &c2[1], 2);
 		if (cAndKeys.find(c2_) == cAndKeys.end()) {
 			// 键第一次出现
 			cAndKeys[c2_] = (KeyNode*)malloc(sizeof(KeyNode));
@@ -78,7 +81,7 @@ void MITM4()
 	}
 
 	// 查表
-	u16 p2[2], p_verify_now[2] = {0x1111, 0x1111}, c_verify_now[2]; // p2是解密2轮后的中间变量
+	u16 p2[2], p_verify_now[2] = { 0x1111, 0x1111 }, c_verify_now[2]; // p2是解密2轮后的中间变量
 	i = 0;
 	uint32_t p2_ = 0; // p2_是p2左右拼接起来
 	printf("------------------------\n");
@@ -104,7 +107,7 @@ void MITM4()
 	cout << "Time: " << duration.count() / 1000000 << "s" << endl;
 }
 
-void MITM6()
+void MITM5_6(int r)
 {
 	cout << "加密：\n00000000\nffffffff\n11111111" << endl;
 	cout << "输入对应密文：" << endl;
@@ -126,7 +129,7 @@ void MITM6()
 	uint32_t p2_; // p2_是p2左右拼接起来
 	int i = 0;
 	for (; i < 0xffff; i++, guesskey[2]++) {
-		Dec(p2, c, guesskey, 6, 2);
+		Dec(p2, c, guesskey, r, r - 4);
 		memcpy(((u16*)&p2_) + 1, &p2[0], 2);
 		memcpy(&p2_, &p2[1], 2);
 		if (cAndKeys.find(p2_) == cAndKeys.end()) {
@@ -148,7 +151,7 @@ void MITM6()
 
 	// 查表
 	vector<Key*> keys;
-	u16 p[2] = {0x0000, 0x0000}, c4[2]; // c4是加密4轮后的中间变量
+	u16 p[2] = { 0x0000, 0x0000 }, c4[2]; // c4是加密4轮后的中间变量
 	uint32_t c4_ = 0; // c4_是c4左右拼接起来
 	u16 possibleK0[8] = { 0b0000000000000000, 0b0000000000000010, 0b0000000001000000, 0b0000000001000010, 0b0001000000000010, 0b0001000001000000, 0b0001000001000000, 0b0001000001000010 };
 	for (int j = 0; j < 8; j++) {
@@ -187,7 +190,7 @@ void MITM6()
 						guesskey[0] = nowKey->k[0] ^ area1 ^ (area2 << 2) ^ (area3 << 7) ^ (area4 << 13);
 						guesskey[1] = nowKey->k[1];
 						guesskey[2] = nowKey->k[2];
-						Enc(p_verify_now, c_verify_now, guesskey, 6);
+						Enc(p_verify_now, c_verify_now, guesskey, r);
 						if (c_verify_now[0] == c_verify[0] && c_verify_now[1] == c_verify[1]) {
 							// printf("K0:%04x\tK1:%04x\tK2:%04x\n", guesskey[0], guesskey[1], guesskey[2]);
 							temp = (Key*)malloc(sizeof(Key));
@@ -209,12 +212,12 @@ void MITM6()
 		guesskey[0] = nowKey->k[0];
 		guesskey[1] = nowKey->k[1];
 		guesskey[2] = nowKey->k[2];
-		Enc(p_verify_now2, c_verify_now2, guesskey, 6);
+		Enc(p_verify_now2, c_verify_now2, guesskey, r);
 		if (c_verify_now2[0] == c_verify2[0] && c_verify_now2[1] == c_verify2[1]) {
 			printf("K0:%04x\tK1:%04x\tK2:%04x\n", guesskey[0], guesskey[1], guesskey[2]);
 		}
 	}
-	
+
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
 	cout << "Time: " << duration.count() / 1000000 << "s" << endl;
