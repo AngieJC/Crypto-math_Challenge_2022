@@ -39,6 +39,12 @@ int main() {
 	case 6:
 		MITM(r);
 		break;
+	case 7:
+		MITM(r);
+		break;
+	case 8:
+		MITM(r);
+		break;
 	default:
 		if (r > 6) {
 			// analysisnRounds(r);
