@@ -20,7 +20,7 @@ struct KeyNode { // 每一个键对应一个链表，链表节点存储可行密
 };
 
 struct KeyNode2 { // 每一个键对应一个链表，链表节点存储可行密钥和下一个可行密钥的指针
-	u16 k0 = 0, k1 = 0;
+	u16 k2 = 0, k3 = 0;
 	KeyNode2* next = NULL;
 };
 
@@ -233,39 +233,45 @@ void MITM5_6(int r)
 void MITM7_8(int r) {
 	auto start = high_resolution_clock::now(); // 开始计时
 
-	/*阶段1：解密4轮，建表p0->key[0, 1]*/
+	/*阶段1：加密4轮，建表c->key[2, 3]*/
 	// 4轮中间变量取0000000000000000  0000000000000100需在解密方向猜{0..15}\{2, 8}，需在加密方向猜{1, 4, 6, 10, 12, 13, 15}
-	u16 m4[2] = {0b0000000000000000, 0b0000000000000100}, area1, area2, area3, guessKeyDecode[4] = {0}, p[2];
+	u16 m4[2] = {0b0000000000000000, 0b0000000000000100}, guess1, guess4, guess6, guess10, guess12_13, guess15, guessKeyDecode[4] = {0}, c[2];
 	// 不需要猜的k1[2]和k1[8]将k1分成两3部分，第一部分2位{0, 1}，第二部分5位{3, 4, 5, 6, 7}，第三部分7位{9..15}
-	uint32_t p_; // p_是p左右拼接
+	uint32_t c_; // p_是p左右拼接
 	int k0Flag = 0;
-	unordered_map<uint32_t, KeyNode2*> pAndKeys;
+	unordered_map<uint32_t, KeyNode2*> cAndKeys;
 	KeyNode2* temp = NULL;
-	for (area1 = 0; area1 <= 0b11; area1++) { // 第一部分2位
-		for (area2 = 0; area2 <= 0b11111; area2++) { // 第二部分5位
-			for (area3 = 0; area3 <= 0b1111111; area3++) { // 第三部分7位
-				guessKeyDecode[1] = area1 ^ area2 ^ area3; // 三部分拼接，剩余两位恒为0
-				for (k0Flag = 0, guessKeyDecode[0] = 0; k0Flag <= 0xffff; k0Flag++, guessKeyDecode[0]++) { // 由于guessKeyDecode[0]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
-					Dec(p, m4, guessKeyDecode, 4, 4);
-					memcpy(((u16*)&p_) + 1, &p[0], 2);
-					memcpy(&p_, &p[1], 2);
-					if (pAndKeys.find(p_) == pAndKeys.end()) {
-						// 键第一次出现
-						// 头插，第一个节点不存储任何信息，方便后续插入
-						pAndKeys[p_] = (KeyNode2*)malloc(sizeof(KeyNode2));
-						pAndKeys[p_]->next = (KeyNode2*)malloc(sizeof(KeyNode2));
-						pAndKeys[p_]->next->k0 = guessKeyDecode[0];
-						pAndKeys[p_]->next->k1 = guessKeyDecode[1];
-					}
-					else {
-						temp = (KeyNode2*)malloc(sizeof(KeyNode2));
-						temp->k0 = guessKeyDecode[0];
-						temp->k1 = guessKeyDecode[1];
-						temp->next = pAndKeys[p_]->next;
-						pAndKeys[p_]->next = temp;
+	for (guess1 = 0; guess1 <= 0b1; guess1++) {
+		for (guess4 = 0; guess4 <= 0b1; guess4++) {
+			for (guess6 = 0; guess6 <= 0b1; guess6++) {
+				for (guess10 = 0; guess10 <= 0b1; guess10++) {
+					for (guess12_13 = 0; guess12_13 <= 0b1; guess12_13++) {
+						for (guess15 = 0; guess15 <= 0b1; guess15++) {
+							guessKeyDecode[2] = guess1 << 14 ^ guess4 << 11 ^ guess6 << 9 ^ guess10 << 5 ^ guess12_13 << 2 ^ guess15;
+							for (k0Flag = 0, guessKeyDecode[3] = 0; k0Flag <= 0xffff; k0Flag++, guessKeyDecode[3]++) { // 由于guessKeyDecode[3]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
+								Enc(c, m4, guessKeyDecode, 4, 4);
+								memcpy(((u16*)&c_) + 1, &c[0], 2);
+								memcpy(&c_, &c[1], 2);
+								if (cAndKeys.find(c_) == cAndKeys.end()) {
+									// 键第一次出现
+									// 头插，第一个节点不存储任何信息，方便后续插入
+									cAndKeys[c_] = (KeyNode2*)malloc(sizeof(KeyNode2));
+									cAndKeys[c_]->next = (KeyNode2*)malloc(sizeof(KeyNode2));
+									cAndKeys[c_]->next->k2 = guessKeyDecode[2];
+									cAndKeys[c_]->next->k3 = guessKeyDecode[3];
+								}
+								else {
+									temp = (KeyNode2*)malloc(sizeof(KeyNode2));
+									temp->k2 = guessKeyDecode[2];
+									temp->k3 = guessKeyDecode[3];
+									temp->next = cAndKeys[c_]->next;
+									cAndKeys[c_]->next = temp;
+								}
+							}
+							k0Flag = 0;
+						}
 					}
 				}
-				k0Flag = 0;
 			}
 		}
 	}
