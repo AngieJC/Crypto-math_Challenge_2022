@@ -1,4 +1,6 @@
 ﻿#pragma once
+#pragma comment(lib, "pthreadVC3.lib")
+
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -11,6 +13,7 @@
 #include <time.h>
 #include <cmath>
 #include <chrono>
+#include <pthread.h>
 
 #include "CryptographicAlgorithm.h"
 
@@ -29,9 +32,19 @@ struct Key { // 6轮中所有可行的密钥
 	// Key* next = NULL;
 };
 
+struct args4MultiThread {
+	// 哈希表
+	unordered_map<uint32_t, KeyNode2*>* cAndKeys;
+	// 匹配成功的密钥
+	// vector<Key*>* keys;
+	// 线程ID
+	int UID;
+};
+
 void MITM4();
 void MITM5_6(int r);
 void MITM7_8(int r);
+void *verifyMultiThread(void * ptr);
 
 void MITM(int r) {
 	if (r == 4) {
@@ -231,11 +244,14 @@ void MITM5_6(int r)
 
 
 void MITM7_8(int r) {
+	cout << "使用多少线程：";
+	int nthreads = 0;
+	cin >> nthreads;
 	auto start = high_resolution_clock::now(); // 开始计时
 
-	/*阶段1：加密4轮，建表c->key[2, 3]*/
+	/*阶段1：加密4轮，建表c'->key[2, 3]*/
 	// 4轮中间变量取0000000000000000  0000000000000100需在解密方向猜{0..15}\{2, 8}，需在加密方向猜{1, 4, 6, 10, 12, 13, 15}
-	u16 m4[2] = {0b0000000000000000, 0b0000000000000100}, guess1, guess4, guess6, guess10, guess12_13, guess15, guessKeyDecode[4] = {0}, c[2];
+	u16 m4[2] = {0b0000000000000000, 0b0000000000000100}, guess1, guess4, guess6, guess10, guess12_13, guess15, guessKey[4] = {0}, c[2];
 	// 不需要猜的k1[2]和k1[8]将k1分成两3部分，第一部分2位{0, 1}，第二部分5位{3, 4, 5, 6, 7}，第三部分7位{9..15}
 	uint32_t c_; // p_是p左右拼接
 	int k0Flag = 0;
@@ -247,9 +263,9 @@ void MITM7_8(int r) {
 				for (guess10 = 0; guess10 <= 0b1; guess10++) {
 					for (guess12_13 = 0; guess12_13 <= 0b1; guess12_13++) {
 						for (guess15 = 0; guess15 <= 0b1; guess15++) {
-							guessKeyDecode[2] = guess1 << 14 ^ guess4 << 11 ^ guess6 << 9 ^ guess10 << 5 ^ guess12_13 << 2 ^ guess15;
-							for (k0Flag = 0, guessKeyDecode[3] = 0; k0Flag <= 0xffff; k0Flag++, guessKeyDecode[3]++) { // 由于guessKeyDecode[3]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
-								Enc(c, m4, guessKeyDecode, 4, 4);
+							guessKey[2] = guess1 << 14 ^ guess4 << 11 ^ guess6 << 9 ^ guess10 << 5 ^ guess12_13 << 2 ^ guess15;
+							for (k0Flag = 0, guessKey[3] = 0; k0Flag <= 0xffff; k0Flag++, guessKey[3]++) { // 由于guessKey[3]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
+								Enc(c, m4, guessKey, 4, 4);
 								memcpy(((u16*)&c_) + 1, &c[0], 2);
 								memcpy(&c_, &c[1], 2);
 								if (cAndKeys.find(c_) == cAndKeys.end()) {
@@ -257,13 +273,13 @@ void MITM7_8(int r) {
 									// 头插，第一个节点不存储任何信息，方便后续插入
 									cAndKeys[c_] = (KeyNode2*)malloc(sizeof(KeyNode2));
 									cAndKeys[c_]->next = (KeyNode2*)malloc(sizeof(KeyNode2));
-									cAndKeys[c_]->next->k2 = guessKeyDecode[2];
-									cAndKeys[c_]->next->k3 = guessKeyDecode[3];
+									cAndKeys[c_]->next->k2 = guessKey[2];
+									cAndKeys[c_]->next->k3 = guessKey[3];
 								}
 								else {
 									temp = (KeyNode2*)malloc(sizeof(KeyNode2));
-									temp->k2 = guessKeyDecode[2];
-									temp->k3 = guessKeyDecode[3];
+									temp->k2 = guessKey[2];
+									temp->k3 = guessKey[3];
 									temp->next = cAndKeys[c_]->next;
 									cAndKeys[c_]->next = temp;
 								}
@@ -275,10 +291,21 @@ void MITM7_8(int r) {
 			}
 		}
 	}
+	cout << "建表完成，开始匹配" << endl;
 
-	/*阶段2：在线阶段，p0加密8轮，p0->key[0, 1]改成c8->key[0, 1]*/
-
-	/*阶段3：加密4轮，匹配c8'-key[2, 3]与c8->key[0, 1]*/
+	/*阶段2：在线阶段，m4解密4轮，得到明文后再访问加密应答器加密r轮得到c，然后查表*/
+	// 创建多线程
+	pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * nthreads);
+	for (int i = 0; i < nthreads; i++) {
+		args4MultiThread* args = (args4MultiThread*)malloc(sizeof(args4MultiThread));
+		args->cAndKeys = &cAndKeys;
+		// args->keys = &keys;
+		args->UID = i;
+		pthread_create(threads + i, NULL, verifyMultiThread, (void*)(args));
+	}
+	for (int i = 0; i < nthreads; i++) {
+		pthread_join(threads[i], NULL);
+	}
 
 	/*阶段4：验证*/
 
@@ -286,4 +313,10 @@ void MITM7_8(int r) {
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
 	cout << "Time: " << duration.count() / 1000000 << "s" << endl;
+}
+
+void* verifyMultiThread(void* ptr) {
+	args4MultiThread* args = (args4MultiThread*)ptr;
+
+	return NULL;
 }
