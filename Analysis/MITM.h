@@ -399,7 +399,7 @@ void* verifyMultiThread(void* ptr) {
 									for (k2area6 = 0; k2area6 <= 0b1; k2area6++) {
 										guessKey[0] = nowKey->k[0];
 										guessKey[1] = (k1area1 << 13) ^ (k1area1 << 7) ^ nowKey->k[1];
-										guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1);
+										guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1) ^ nowKey->k[2];
 										guessKey[3] = nowKey->k[3];
 										Enc(p_verify_now, c_verify_now, guessKey, args->r);
 										if (c_verify_now[0] == args->c_verify1[0] && c_verify_now[1] == args->c_verify1[1]) {
