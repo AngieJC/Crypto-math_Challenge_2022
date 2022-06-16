@@ -37,8 +37,12 @@ struct args4MultiThread {
 	unordered_map<uint32_t, KeyNode2*>* cAndKeys;
 	// 匹配成功的密钥
 	// vector<Key*>* keys;
-	// 线程ID
-	int UID;
+	// 线程ID和总线程数
+	u16 UID, nthreads;
+	// 加密轮数
+	int r;
+	// 用于验证匹配的明密文对
+	u16 p_verify1[2], c_verify1[2], p_verify2[2], c_verify2[2];
 };
 
 void MITM4();
@@ -247,6 +251,17 @@ void MITM7_8(int r) {
 	cout << "使用多少线程：";
 	int nthreads = 0;
 	cin >> nthreads;
+	cout << "加密：\nffffffff\n11111111" << endl;
+	cout << "输入对应密文：" << endl;
+	cin.setf(ios_base::hex, ios_base::basefield);
+	uint32_t c_verify_, c_verify_2;
+	cin >> c_verify_ >> c_verify_2;
+	u16 c_verify[2], c_verify2[2];
+	memcpy(c_verify, (u16*)(&c_verify_) + 1, 2);
+	memcpy(c_verify + 1, (u16*)(&c_verify_), 2);
+	memcpy(c_verify2, (u16*)(&c_verify_2) + 1, 2);
+	memcpy(c_verify2 + 1, (u16*)(&c_verify_2), 2);
+
 	auto start = high_resolution_clock::now(); // 开始计时
 
 	/*阶段1：加密4轮，建表c'->key[2, 3]*/
@@ -263,7 +278,7 @@ void MITM7_8(int r) {
 				for (guess10 = 0; guess10 <= 0b1; guess10++) {
 					for (guess12_13 = 0; guess12_13 <= 0b1; guess12_13++) {
 						for (guess15 = 0; guess15 <= 0b1; guess15++) {
-							guessKey[2] = guess1 << 14 ^ guess4 << 11 ^ guess6 << 9 ^ guess10 << 5 ^ guess12_13 << 2 ^ guess15;
+							guessKey[2] = guess1 << 14 ^ (guess4 << 11) ^ (guess6 << 9) ^ (guess10 << 5) ^ (guess12_13 << 2) ^ guess15;
 							for (k0Flag = 0, guessKey[3] = 0; k0Flag <= 0xffff; k0Flag++, guessKey[3]++) { // 由于guessKey[3]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
 								Enc(c, m4, guessKey, 4, 4);
 								memcpy(((u16*)&c_) + 1, &c[0], 2);
@@ -299,15 +314,22 @@ void MITM7_8(int r) {
 	for (int i = 0; i < nthreads; i++) {
 		args4MultiThread* args = (args4MultiThread*)malloc(sizeof(args4MultiThread));
 		args->cAndKeys = &cAndKeys;
-		// args->keys = &keys;
 		args->UID = i;
+		args->nthreads = nthreads;
+		args->r = r;
+		args->p_verify1[0] = 0xffff;
+		args->p_verify1[1] = 0xffff;
+		args->p_verify2[0] = 0x1111;
+		args->p_verify2[1] = 0x1111;
+		args->c_verify1[0] = c_verify[0];
+		args->c_verify1[1] = c_verify[1];
+		args->c_verify2[0] = c_verify2[0];
+		args->c_verify2[1] = c_verify2[1];
 		pthread_create(threads + i, NULL, verifyMultiThread, (void*)(args));
 	}
 	for (int i = 0; i < nthreads; i++) {
 		pthread_join(threads[i], NULL);
 	}
-
-	/*阶段4：验证*/
 
 
 	auto stop = high_resolution_clock::now();
@@ -317,6 +339,100 @@ void MITM7_8(int r) {
 
 void* verifyMultiThread(void* ptr) {
 	args4MultiThread* args = (args4MultiThread*)ptr;
+
+	vector<Key*> keys;
+	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0};
+	u16 realKey[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef }, guessKey[4] = {0};
+	uint32_t c_;
+
+	// 确定本线程需要遍历的空间
+	// 所有线程一共需要遍历k1：01*3456789abcde*					*为不需要遍历，设为0
+	// 首先确定总线程数需要占几个比特，那么每线程就少遍历几比特
+	// 假定最多有32个线程，那么每个线程需要遍历01*3456789xxxxx*	xxxxx为线程号
+	u16 threadLength = (u16)(log(args->nthreads) / log(2));
+	u16 area2Bound = 0b111111111111 >> threadLength, area2Remove = 1 + threadLength;
+	int key0flag = 0;
+	for (u16 area1 = 0; area1 <= 0b11; area1++) {
+		for (u16 area2 = 0; area2 <= area2Bound; area2++) {
+			guessKey[1] = (area1 << 14) ^ (area2 << area2Remove) ^ (args->UID << 1);
+			for (guessKey[0] = 0, key0flag = 0; key0flag <= 0xffff; key0flag++, guessKey[0]++) {
+				// 至此确定了每一次猜的密钥长啥样，接下来要用这个密钥解密4轮再访问加密应答器
+				Dec(p, m4, guessKey, 4, 4);
+
+				// 这里应该是在线访问的，写到程序里快一些
+				Enc(p, c, realKey, args->r); // 这里是真实密钥
+				memcpy(((u16*)&c_) + 1, &c[0], 2);
+				memcpy(&c_, &c[1], 2);
+
+				// 查表
+				if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
+					// 命中，暂存k0, k1, k2, k3
+					KeyNode2* temp1 = (*args->cAndKeys)[c_];
+					while (temp1->next) {
+						Key* temp2 = (Key*)malloc(sizeof(Key));
+						temp2->k[0] = guessKey[0];
+						temp2->k[1] = guessKey[1];
+						temp2->k[2] = temp1->next->k2;
+						temp2->k[3] = temp1->next->k3;
+						keys.push_back(temp2);
+						temp1 = temp1->next;
+					}
+				}
+			}
+		}
+	}
+
+	// 第一次验证
+	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
+	vector<Key*> accurateKeys;
+	Key* temp;
+	for (long long i = 0; i < keys.size(); i++) {
+		Key* nowKey = keys[i];
+		u16 k1area1, k1area2, k2area1, k2area2, k2area3, k2area4, k2area5, k2area6;
+		for (k1area1 = 0; k1area1 <= 0b1; k1area1++) {
+			for (k1area2 = 0; k1area2 <= 0b1; k1area2++) {
+				for (k2area1 = 0; k2area1 <= 0b1; k2area1++) {
+					for (k2area2 = 0; k2area2 <= 0b11; k2area2++) {
+						for (k2area3 = 0; k2area3 <= 0b1; k2area3++) {
+							for (k2area4 = 0; k2area4 <= 0b111; k2area4++) {
+								for (k2area5 = 0; k2area5 <= 0b1; k2area5++) {
+									for (k2area6 = 0; k2area6 <= 0b1; k2area6++) {
+										guessKey[0] = nowKey->k[0];
+										guessKey[1] = (k1area1 << 13) ^ (k1area1 << 7) ^ nowKey->k[1];
+										guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1);
+										guessKey[3] = nowKey->k[3];
+										Enc(p_verify_now, c_verify_now, guessKey, args->r);
+										if (c_verify_now[0] == args->c_verify1[0] && c_verify_now[1] == args->c_verify1[1]) {
+											temp = (Key*)malloc(sizeof(Key));
+											temp->k[0] = guessKey[0];
+											temp->k[1] = guessKey[1];
+											temp->k[2] = guessKey[2];
+											temp->k[3] = guessKey[3];
+											accurateKeys.push_back(temp);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 第二次验证
+	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
+	for (long long i = 0; i < accurateKeys.size(); i++) {
+		Key* nowKey = accurateKeys[i];
+		guessKey[0] = nowKey->k[0];
+		guessKey[1] = nowKey->k[1];
+		guessKey[2] = nowKey->k[2];
+		guessKey[3] = nowKey->k[3];
+		Enc(p_verify_now2, c_verify_now2, guessKey, args->r);
+		if (c_verify_now2[0] == args->c_verify2[0] && c_verify_now2[1] == args->c_verify2[1]) {
+			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
+		}
+	}
 
 	return NULL;
 }
