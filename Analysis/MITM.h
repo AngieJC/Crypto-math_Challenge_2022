@@ -1,5 +1,5 @@
 ﻿#pragma once
-#pragma comment(lib, "pthreadVC3.lib")
+// #pragma comment(lib, "pthreadVC3.lib")
 
 #include <iostream>
 #include <fstream>
@@ -278,9 +278,9 @@ void MITM7_8(int r) {
 				for (guess10 = 0; guess10 <= 0b1; guess10++) {
 					for (guess12_13 = 0; guess12_13 <= 0b11; guess12_13++) {
 						for (guess15 = 0; guess15 <= 0b1; guess15++) {
-							guessKey[2] = guess1 << 14 ^ (guess4 << 11) ^ (guess6 << 9) ^ (guess10 << 5) ^ (guess12_13 << 2) ^ guess15;
+							guessKey[2] = (guess1 << 14) ^ (guess4 << 11) ^ (guess6 << 9) ^ (guess10 << 5) ^ (guess12_13 << 2) ^ guess15;
 							for (k0Flag = 0, guessKey[3] = 0; k0Flag <= 0xffff; k0Flag++, guessKey[3]++) { // 由于guessKey[3]最大值为0xffff，再增加就会等于0，直接使用guessKeyDecode[0]判断循环是否终止将会导致死循环
-								Enc(c, m4, guessKey, 4, 4);
+								Enc(m4, c, guessKey, 4, 4);
 								memcpy(((u16*)&c_) + 1, &c[0], 2);
 								memcpy(&c_, &c[1], 2);
 								if (cAndKeys.find(c_) == cAndKeys.end()) {
@@ -299,7 +299,6 @@ void MITM7_8(int r) {
 									cAndKeys[c_]->next = temp;
 								}
 							}
-							k0Flag = 0;
 						}
 					}
 				}
