@@ -409,7 +409,7 @@ void* verifyMultiThread(void* ptr) {
 	pthread_barrier_wait(args->barrier);
 	// 释放cAndKeys
 	if (args->UID == 0) {
-		free(args->cAndKeys);
+		args->cAndKeys->clear();
 	}
 
 	printf("线程%02d查表完成\n", args->UID);
@@ -462,7 +462,7 @@ void* verifyMultiThread(void* ptr) {
 	// 待所有线程使用完args->keys后将其销毁
 	pthread_barrier_wait(args->barrier);
 	if(args->UID == 0) {
-		free(args->keys);
+		args->keys->clear();
 	}
 
 	// 第二次验证
