@@ -400,6 +400,8 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
+	// 释放cAndKeys
+	free(args->cAndKeys);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
