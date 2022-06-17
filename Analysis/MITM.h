@@ -46,6 +46,8 @@ struct args4MultiThread {
 	vector<Key*>* keys;
 	// 互斥锁，合并可行密钥时使用
 	pthread_mutex_t* mutex;
+	// 同步量，用于线程判断所有线程都完成了可行密钥合并再继续运行
+	pthread_barrier_t* barrier;
 };
 
 void MITM4();
@@ -314,7 +316,9 @@ void MITM7_10(int r) {
 	/*阶段2：在线阶段，m4解密4轮，得到明文后再访问加密应答器加密r轮得到c，然后查表*/
 	vector<Key*> keys;
 	pthread_mutex_t mutex;
+	pthread_barrier_t barrier;
 	pthread_mutex_init(&mutex, NULL);
+	pthread_barrier_init(&barrier, NULL, nthreads);
 	// 创建多线程
 	pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * nthreads);
 	for (int i = 0; i < nthreads; i++) {
@@ -333,11 +337,14 @@ void MITM7_10(int r) {
 		args->c_verify2[1] = c_verify2[1];
 		args->keys = &keys;
 		args->mutex = &mutex;
+		args->barrier = &barrier;
 		pthread_create(threads + i, NULL, verifyMultiThread, (void*)(args));
 	}
 	for (int i = 0; i < nthreads; i++) {
 		pthread_join(threads[i], NULL);
 	}
+	pthread_mutex_destroy(&mutex);
+	pthread_barrier_destroy(&barrier);
 
 
 	auto stop = high_resolution_clock::now();
@@ -351,52 +358,54 @@ void* verifyMultiThread(void* ptr) {
 	vector<Key*> keys;
 	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0}, c8[2] = {0};
 	u16 realKey[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef }, guessKey[4] = {0};
-	uint32_t c_, c8_;
+	uint32_t c_;
 
 	// 确定本线程需要遍历的空间
 	// 所有线程一共需要遍历k1：01*3456789abcde*					*为不需要遍历，设为0
 	// 首先确定总线程数需要占几个比特，那么每线程就少遍历几比特
-	// 假定最多有32个线程，那么每个线程需要遍历01*3456789xxxxx*	xxxxx为线程号
+	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
-	u16 area2Bound = (0b111111111111 >> threadLength), area2Remove = 1 + threadLength;
+	u16 area3Bound = 0b1111111 >> threadLength;
 	int key0flag = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
-		for (u16 area2 = 0; area2 <= area2Bound; area2++) {
-			guessKey[1] = (area1 << 14) ^ (area2 << area2Remove) ^ (args->UID << 1);
-			for (guessKey[0] = 0, key0flag = 0; key0flag <= 0xffff; key0flag++, guessKey[0]++) {
-				// 至此确定了每一次猜的密钥长啥样，接下来要用这个密钥解密4轮再访问加密应答器
-				Dec(p, m4, guessKey, 4, 4);
+		for (u16 area2 = 0; area2 <= 0b11111; area2++) {
+			for (u16 area3 = 0; area3 <= area3Bound; area3++) {
+				guessKey[1] = (area1 << 14) ^ (area2 << 8) ^ (area3 << threadLength) ^ args->UID;
+				for (guessKey[0] = 0, key0flag = 0; key0flag <= 0xffff; key0flag++, guessKey[0]++) {
+					// 至此确定了每一次猜的密钥长啥样，接下来要用这个密钥解密4轮再访问加密应答器
+					Dec(p, m4, guessKey, 4, 4);
 
-				// 这里应该是在线访问的，写到程序里快一些
-				Enc(p, c, realKey, args->r); // 这里是真实密钥
-				// 使用猜测的k0解密到第8轮
-				Dec(c8, c, guessKey, args->r, args->r - 8);
-				memcpy(((u16*)&c_) + 1, &c8[0], 2);
-				memcpy(&c_, &c8[1], 2);
+					// 这里应该是在线访问的，写到程序里快一些
+					Enc(p, c, realKey, args->r); // 这里是真实密钥
+					// 使用猜测的k0解密到第8轮
+					Dec(c8, c, guessKey, args->r, args->r - 8);
+					memcpy(((u16*)&c_) + 1, &c8[0], 2);
+					memcpy(&c_, &c8[1], 2);
 
-				// 查表
-				if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
-					// 命中，暂存k0, k1, k2, k3
-					KeyNode2* temp1 = (*args->cAndKeys)[c_];
-					while (temp1->next) {
-						Key* temp2 = (Key*)malloc(sizeof(Key));
-						temp2->k[0] = guessKey[0];
-						temp2->k[1] = guessKey[1];
-						temp2->k[2] = temp1->next->k2;
-						temp2->k[3] = temp1->next->k3;
-						keys.push_back(temp2);
-						temp1 = temp1->next;
+					// 查表
+					if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
+						// 命中，暂存k0, k1, k2, k3
+						KeyNode2* temp1 = (*args->cAndKeys)[c_];
+						while (temp1->next) {
+							Key* temp2 = (Key*)malloc(sizeof(Key));
+							temp2->k[0] = guessKey[0];
+							temp2->k[1] = guessKey[1];
+							temp2->k[2] = temp1->next->k2;
+							temp2->k[3] = temp1->next->k3;
+							keys.push_back(temp2);
+							temp1 = temp1->next;
+						}
 					}
 				}
 			}
-			key0flag = 0;
-			guessKey[0] = 0;
 		}
 	}
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
 	pthread_mutex_unlock(args->mutex);
+	// 待所有线程合并完成后再向下执行
+	pthread_barrier_wait(args->barrier);
 
 	printf("线程%02d查表完成\n", args->UID);
 
@@ -407,7 +416,7 @@ void* verifyMultiThread(void* ptr) {
 	// 确定本线程需要验证的范围
 	long long begin = (long long)(args->keys->size() / args->nthreads) * args->UID;
 	long long end = (long long)(args->keys->size() / args->nthreads) * (args->UID + 1);
-	if (args->UID == args->nthreads) {
+	if (args->UID == args->nthreads - 1) {
 		end = args->keys->size();
 	}
 	for (long long i = begin; i < end; i++) {
