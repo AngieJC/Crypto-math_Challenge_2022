@@ -406,6 +406,7 @@ void* verifyMultiThread(void* ptr) {
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
 	pthread_mutex_unlock(args->mutex);
+	free(&keys);
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
 
@@ -456,6 +457,9 @@ void* verifyMultiThread(void* ptr) {
 	}
 
 	printf("线程%02d第一次验证完成\n", args->UID);
+	// 待所有线程使用完args->keys后将其销毁
+	pthread_barrier_wait(args->barrier);
+	free(args->keys);
 
 	// 第二次验证
 	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
