@@ -51,9 +51,23 @@ struct args4MultiThread {
 	pthread_barrier_t* barrier;
 };
 
+// 加密应答器类
+class Encoder {
+public:
+	int r; // 加密轮数
+
+private: // 加密机的密钥，没有任何办法可以访问
+	u16 Key[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef };
+
+public:
+	void Encode(u16* p, u16* c) {
+		Enc(p, c, Key, r);
+	}
+};
+
 void MITM4();
 void MITM5_6(int r);
-void MITM7_10(int r);
+void MITM7_12(int r);
 void *verifyMultiThread(void * ptr);
 
 void MITM(int r) {
@@ -63,8 +77,8 @@ void MITM(int r) {
 	else if (r == 5 || r == 6) {
 		MITM5_6(r);
 	}
-	else if (r >= 7 && r <= 10) {
-		MITM7_10(r);
+	else if (r >= 7 && r <= 12) {
+		MITM7_12(r);
 	}
 }
 
@@ -253,7 +267,7 @@ void MITM5_6(int r)
 }
 
 
-void MITM7_10(int r) {
+void MITM7_12(int r) {
 	cout << "使用多少线程：";
 	int nthreads = 0;
 	cin >> nthreads;
@@ -273,7 +287,6 @@ void MITM7_10(int r) {
 	/*阶段1：加密4轮，建表c'->key[2, 3]*/
 	// 4轮中间变量取0000000000000000  0000000000000100需在解密方向猜{0..15}\{2, 8}，需在加密方向猜{1, 4, 6, 10, 12, 13, 15}
 	u16 m4[2] = {0b0000000000000000, 0b0000000000000100}, guess1, guess4, guess6, guess10, guess12_13, guess15, guessKey[4] = {0}, c[2];
-	// 不需要猜的k1[2]和k1[8]将k1分成两3部分，第一部分2位{0, 1}，第二部分5位{3, 4, 5, 6, 7}，第三部分7位{9..15}
 	uint32_t c_; // p_是p左右拼接
 	int k0Flag = 0;
 	unordered_map<uint32_t, KeyNode2*> cAndKeys;
@@ -358,7 +371,10 @@ void* verifyMultiThread(void* ptr) {
 
 	vector<Key*> keys;
 	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0}, c8[2] = {0};
-	u16 realKey[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef }, guessKey[4] = {0};
+	// 初始化加密机
+	Encoder EncMachine;
+	EncMachine.r = args->r;
+	u16 guessKey[4] = {0};
 	uint32_t c_;
 
 	// 确定本线程需要遍历的空间
@@ -376,25 +392,52 @@ void* verifyMultiThread(void* ptr) {
 					// 至此确定了每一次猜的密钥长啥样，接下来要用这个密钥解密4轮再访问加密应答器
 					Dec(p, m4, guessKey, 4, 4);
 
-					// 这里应该是在线访问的，写到程序里快一些
-					Enc(p, c, realKey, args->r); // 这里是真实密钥
-					// 使用猜测的k0解密到第8轮
-					Dec(c8, c, guessKey, args->r, args->r - 8);
-					memcpy(((u16*)&c_) + 1, &c8[0], 2);
-					memcpy(&c_, &c8[1], 2);
+					// 访问加密机
+					EncMachine.Encode(p, c);
+					// 解密到第8轮
+					if (args->r >= 11) {
+						for (u16 bit2 = 0; bit2 <= 0b1; bit2++) {
+							for (u16 bit8 = 0; bit8 <= 0b1; bit8++) {
+								guessKey[1] = (area1 << 14) ^ (area2 << 8) ^ (area3 << threadLength) ^ (bit2 << 13) ^ (bit8 << 7) ^ args->UID;
+								Dec(c8, c, guessKey, args->r, args->r - 8);
+								memcpy(((u16*)&c_) + 1, &c8[0], 2);
+								memcpy(&c_, &c8[1], 2);
 
-					// 查表
-					if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
-						// 命中，暂存k0, k1, k2, k3
-						KeyNode2* temp1 = (*args->cAndKeys)[c_];
-						while (temp1->next) {
-							Key* temp2 = (Key*)malloc(sizeof(Key));
-							temp2->k[0] = guessKey[0];
-							temp2->k[1] = guessKey[1];
-							temp2->k[2] = temp1->next->k2;
-							temp2->k[3] = temp1->next->k3;
-							keys.push_back(temp2);
-							temp1 = temp1->next;
+								// 查表
+								if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
+									// 命中，暂存k0, k1, k2, k3
+									KeyNode2* temp1 = (*args->cAndKeys)[c_];
+									while (temp1->next) {
+										Key* temp2 = (Key*)malloc(sizeof(Key));
+										temp2->k[0] = guessKey[0];
+										temp2->k[1] = guessKey[1];
+										temp2->k[2] = temp1->next->k2;
+										temp2->k[3] = temp1->next->k3;
+										keys.push_back(temp2);
+										temp1 = temp1->next;
+									}
+								}
+							}
+						}
+					}
+					else {
+						Dec(c8, c, guessKey, args->r, args->r - 8);
+						memcpy(((u16*)&c_) + 1, &c8[0], 2);
+						memcpy(&c_, &c8[1], 2);
+
+						// 查表
+						if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
+							// 命中，暂存k0, k1, k2, k3
+							KeyNode2* temp1 = (*args->cAndKeys)[c_];
+							while (temp1->next) {
+								Key* temp2 = (Key*)malloc(sizeof(Key));
+								temp2->k[0] = guessKey[0];
+								temp2->k[1] = guessKey[1];
+								temp2->k[2] = temp1->next->k2;
+								temp2->k[3] = temp1->next->k3;
+								keys.push_back(temp2);
+								temp1 = temp1->next;
+							}
 						}
 					}
 				}
