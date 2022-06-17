@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#ifdef __linux__
-	#pragma comment(lib, "pthreadVC3.lib")
-#endif // __linux__
-
-
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -47,11 +42,15 @@ struct args4MultiThread {
 	int r;
 	// 用于验证匹配的明密文对
 	u16 p_verify1[2], c_verify1[2], p_verify2[2], c_verify2[2];
+	// 用于存储匹配成功的密钥
+	vector<Key*>* keys;
+	// 互斥锁，原本在向keys插入匹配的密钥时使用，由于vector线程安全，暂时上不上了
+	pthread_mutex_t* mutex;
 };
 
 void MITM4();
 void MITM5_6(int r);
-void MITM7_8(int r);
+void MITM7_10(int r);
 void *verifyMultiThread(void * ptr);
 
 void MITM(int r) {
@@ -62,7 +61,7 @@ void MITM(int r) {
 		MITM5_6(r);
 	}
 	else if (r == 7 || r == 8) {
-		MITM7_8(r);
+		MITM7_10(r);
 	}
 }
 
@@ -251,7 +250,7 @@ void MITM5_6(int r)
 }
 
 
-void MITM7_8(int r) {
+void MITM7_10(int r) {
 	cout << "使用多少线程：";
 	int nthreads = 0;
 	cin >> nthreads;
@@ -313,6 +312,9 @@ void MITM7_8(int r) {
 	cout << "建表完成，开始匹配" << endl;
 
 	/*阶段2：在线阶段，m4解密4轮，得到明文后再访问加密应答器加密r轮得到c，然后查表*/
+	vector<Key*> keys;
+	pthread_mutex_t mutex;
+	pthread_mutex_init(&mutex, NULL);
 	// 创建多线程
 	pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * nthreads);
 	for (int i = 0; i < nthreads; i++) {
@@ -329,6 +331,8 @@ void MITM7_8(int r) {
 		args->c_verify1[1] = c_verify[1];
 		args->c_verify2[0] = c_verify2[0];
 		args->c_verify2[1] = c_verify2[1];
+		args->keys = &keys;
+		args->mutex = &mutex;
 		pthread_create(threads + i, NULL, verifyMultiThread, (void*)(args));
 	}
 	for (int i = 0; i < nthreads; i++) {
@@ -344,10 +348,10 @@ void MITM7_8(int r) {
 void* verifyMultiThread(void* ptr) {
 	args4MultiThread* args = (args4MultiThread*)ptr;
 
-	vector<Key*> keys;
-	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0};
+	// vector<Key*> keys;
+	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0}, c8[2] = {0};
 	u16 realKey[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef }, guessKey[4] = {0};
-	uint32_t c_;
+	uint32_t c_, c8_;
 
 	// 确定本线程需要遍历的空间
 	// 所有线程一共需要遍历k1：01*3456789abcde*					*为不需要遍历，设为0
@@ -365,8 +369,10 @@ void* verifyMultiThread(void* ptr) {
 
 				// 这里应该是在线访问的，写到程序里快一些
 				Enc(p, c, realKey, args->r); // 这里是真实密钥
-				memcpy(((u16*)&c_) + 1, &c[0], 2);
-				memcpy(&c_, &c[1], 2);
+				// 使用猜测的k0解密到第8轮
+				Dec(c8, c, guessKey, args->r, args->r - 8);
+				memcpy(((u16*)&c_) + 1, &c8[0], 2);
+				memcpy(&c_, &c8[1], 2);
 
 				// 查表
 				if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
@@ -378,7 +384,9 @@ void* verifyMultiThread(void* ptr) {
 						temp2->k[1] = guessKey[1];
 						temp2->k[2] = temp1->next->k2;
 						temp2->k[3] = temp1->next->k3;
-						keys.push_back(temp2);
+						// pthread_mutex_lock(args->mutex);
+						args->keys->push_back(temp2); // vector是线程安全的，不需要额外加锁
+						// pthread_mutex_unlock(args->mutex);
 						temp1 = temp1->next;
 					}
 				}
@@ -388,14 +396,20 @@ void* verifyMultiThread(void* ptr) {
 		}
 	}
 
-	printf("线程%d查表完成\n", args->UID);
+	printf("线程%02d查表完成\n", args->UID);
 
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
 	vector<Key*> accurateKeys;
 	Key* temp;
-	for (long long i = 0; i < keys.size(); i++) {
-		Key* nowKey = keys[i];
+	// 确定本线程需要验证的范围
+	long long begin = (long long)(args->keys->size() / args->nthreads) * args->UID;
+	long long end = (long long)(args->keys->size() / args->nthreads) * (args->UID + 1);
+	if (args->UID == args->nthreads) {
+		end = args->keys->size();
+	}
+	for (long long i = begin; i < end; i++) {
+		Key* nowKey = (* args->keys)[i];
 		u16 k1area1, k1area2, k2area1, k2area2, k2area3, k2area4, k2area5, k2area6;
 		for (k1area1 = 0; k1area1 <= 0b1; k1area1++) {
 			for (k1area2 = 0; k1area2 <= 0b1; k1area2++) {
@@ -428,7 +442,7 @@ void* verifyMultiThread(void* ptr) {
 		}
 	}
 
-	printf("线程%d第一次验证完成\n", args->UID);
+	printf("线程%02d第一次验证完成\n", args->UID);
 
 	// 第二次验证
 	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
