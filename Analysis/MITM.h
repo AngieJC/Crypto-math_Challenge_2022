@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#ifdef _LINUX
+#ifdef __linux__
 	#pragma comment(lib, "pthreadVC3.lib")
-#endif // _LINUX
+#endif // __linux__
 
 
 #include <iostream>
