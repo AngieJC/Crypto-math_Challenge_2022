@@ -401,7 +401,6 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
-	printf("线程%02d查表完成\n", args->UID);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
@@ -411,6 +410,7 @@ void* verifyMultiThread(void* ptr) {
 	pthread_barrier_wait(args->barrier);
 	// 释放cAndKeys
 	if (args->UID == 0) {
+		printf("查表完成\n");
 		unordered_map<uint32_t, KeyNode2*>().swap(*(args->cAndKeys));
 		#ifdef __linux__
 			malloc_trim(0);
@@ -460,12 +460,11 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
-	printf("线程%02d第一次验证完成\n", args->UID);
 	// 待所有线程使用完args->keys后将其销毁
 	pthread_barrier_wait(args->barrier);
 	if(args->UID == 0) {
 		vector<Key*>().swap(*(args->keys));
-		// args->keys->clear();
+		printf("第一次验证完成\n");
 	}
 
 	// 第二次验证
@@ -478,7 +477,7 @@ void* verifyMultiThread(void* ptr) {
 		guessKey[3] = nowKey->k[3];
 		Enc(p_verify_now2, c_verify_now2, guessKey, args->r);
 		if (c_verify_now2[0] == args->c_verify2[0] && c_verify_now2[1] == args->c_verify2[1]) {
-			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
+			printf("线程%02d找到密钥\tK0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", args->UID, guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
 		}
 	}
 
