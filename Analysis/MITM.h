@@ -63,7 +63,7 @@ void MITM(int r) {
 	else if (r == 5 || r == 6) {
 		MITM5_6(r);
 	}
-	else if (r == 7 || r == 8) {
+	else if (r >= 7 && r <= 10) {
 		MITM7_10(r);
 	}
 }

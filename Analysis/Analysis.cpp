@@ -29,20 +29,12 @@ int main() {
 		cubeAttackAccurate(r, 4);
 		break;
 	case 4:
-		MITM(r);
-		// cubeAttackAccurate(r, 4);
-		break;
 	case 5:
-		MITM(r);
-		// cubeAttackAccurate(r, 4);
-		break;
 	case 6:
-		MITM(r);
-		break;
 	case 7:
-		MITM(r);
-		break;
 	case 8:
+	case 9:
+	case 10:
 		MITM(r);
 		break;
 	default:
