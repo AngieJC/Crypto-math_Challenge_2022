@@ -385,6 +385,8 @@ void* verifyMultiThread(void* ptr) {
 		}
 	}
 
+	printf("线程%d查表完成\n", args->UID);
+
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
 	vector<Key*> accurateKeys;
@@ -422,6 +424,8 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
+
+	printf("线程%d第一次验证完成\n", args->UID);
 
 	// 第二次验证
 	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
