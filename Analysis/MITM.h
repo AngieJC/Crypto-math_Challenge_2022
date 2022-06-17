@@ -404,7 +404,7 @@ void* verifyMultiThread(void* ptr) {
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
 	pthread_mutex_unlock(args->mutex);
-	free(&keys);
+	keys.clear();
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
 	// 释放cAndKeys
