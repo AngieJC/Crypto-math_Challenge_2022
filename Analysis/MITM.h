@@ -400,8 +400,6 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
-	// 释放cAndKeys
-	free(args->cAndKeys);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
@@ -409,6 +407,10 @@ void* verifyMultiThread(void* ptr) {
 	free(&keys);
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
+	// 释放cAndKeys
+	if (args->UID == 0) {
+		free(args->cAndKeys);
+	}
 
 	printf("线程%02d查表完成\n", args->UID);
 
@@ -459,7 +461,9 @@ void* verifyMultiThread(void* ptr) {
 	printf("线程%02d第一次验证完成\n", args->UID);
 	// 待所有线程使用完args->keys后将其销毁
 	pthread_barrier_wait(args->barrier);
-	free(args->keys);
+	if(args->UID == 0) {
+		free(args->keys);
+	}
 
 	// 第二次验证
 	u16 p_verify_now2[2] = { 0x1111, 0x1111 }, c_verify_now2[2];
