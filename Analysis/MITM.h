@@ -294,6 +294,7 @@ void MITM7_8(int r) {
 									cAndKeys[c_]->next = (KeyNode2*)malloc(sizeof(KeyNode2));
 									cAndKeys[c_]->next->k2 = guessKey[2];
 									cAndKeys[c_]->next->k3 = guessKey[3];
+									cAndKeys[c_]->next->next = NULL;
 								}
 								else {
 									temp = (KeyNode2*)malloc(sizeof(KeyNode2));
@@ -353,7 +354,7 @@ void* verifyMultiThread(void* ptr) {
 	// 首先确定总线程数需要占几个比特，那么每线程就少遍历几比特
 	// 假定最多有32个线程，那么每个线程需要遍历01*3456789xxxxx*	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
-	u16 area2Bound = 0b111111111111 >> threadLength, area2Remove = 1 + threadLength;
+	u16 area2Bound = (0b111111111111 >> threadLength), area2Remove = 1 + threadLength;
 	int key0flag = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
 		for (u16 area2 = 0; area2 <= area2Bound; area2++) {
@@ -382,6 +383,8 @@ void* verifyMultiThread(void* ptr) {
 					}
 				}
 			}
+			key0flag = 0;
+			guessKey[0] = 0;
 		}
 	}
 
