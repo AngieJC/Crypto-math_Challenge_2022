@@ -13,6 +13,7 @@
 #include <cmath>
 #include <chrono>
 #include <pthread.h>
+#include <malloc.h>
 
 #include "CryptographicAlgorithm.h"
 
@@ -410,7 +411,10 @@ void* verifyMultiThread(void* ptr) {
 	pthread_barrier_wait(args->barrier);
 	// 释放cAndKeys
 	if (args->UID == 0) {
-		args->cAndKeys->clear();
+		unordered_map<uint32_t, KeyNode2*>().swap(*(args->cAndKeys));
+		#ifdef __linux__
+			malloc_trim(0);
+		#endif // __linux__
 	}
 
 	// 第一次验证
@@ -456,12 +460,12 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
-
 	printf("线程%02d第一次验证完成\n", args->UID);
 	// 待所有线程使用完args->keys后将其销毁
 	pthread_barrier_wait(args->barrier);
 	if(args->UID == 0) {
-		args->keys->clear();
+		vector<Key*>().swap(*(args->keys));
+		// args->keys->clear();
 	}
 
 	// 第二次验证
