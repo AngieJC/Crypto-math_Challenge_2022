@@ -362,7 +362,7 @@ void* verifyMultiThread(void* ptr) {
 	uint32_t c_;
 
 	// 确定本线程需要遍历的空间
-	// 所有线程一共需要遍历k1：01*3456789abcde*					*为不需要遍历，设为0
+	// 所有线程一共需要遍历k1：01*34567*9abcdef					*为不需要遍历，设为0
 	// 首先确定总线程数需要占几个比特，那么每线程就少遍历几比特
 	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
