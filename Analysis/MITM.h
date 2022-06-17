@@ -400,6 +400,7 @@ void* verifyMultiThread(void* ptr) {
 			}
 		}
 	}
+	printf("线程%02d查表完成\n", args->UID);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
@@ -411,8 +412,6 @@ void* verifyMultiThread(void* ptr) {
 	if (args->UID == 0) {
 		args->cAndKeys->clear();
 	}
-
-	printf("线程%02d查表完成\n", args->UID);
 
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
