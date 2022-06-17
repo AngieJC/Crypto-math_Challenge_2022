@@ -44,7 +44,7 @@ struct args4MultiThread {
 	u16 p_verify1[2], c_verify1[2], p_verify2[2], c_verify2[2];
 	// 用于存储匹配成功的密钥
 	vector<Key*>* keys;
-	// 互斥锁，原本在向keys插入匹配的密钥时使用，由于vector线程安全，暂时上不上了
+	// 互斥锁，合并可行密钥时使用
 	pthread_mutex_t* mutex;
 };
 
@@ -348,7 +348,7 @@ void MITM7_10(int r) {
 void* verifyMultiThread(void* ptr) {
 	args4MultiThread* args = (args4MultiThread*)ptr;
 
-	// vector<Key*> keys;
+	vector<Key*> keys;
 	u16 m4[2] = { 0b0000000000000000, 0b0000000000000100 }, p[2] = { 0 }, c[2] = {0}, c8[2] = {0};
 	u16 realKey[4] = { 0x0123, 0x4567, 0x89ab, 0xcdef }, guessKey[4] = {0};
 	uint32_t c_, c8_;
@@ -384,9 +384,7 @@ void* verifyMultiThread(void* ptr) {
 						temp2->k[1] = guessKey[1];
 						temp2->k[2] = temp1->next->k2;
 						temp2->k[3] = temp1->next->k3;
-						// pthread_mutex_lock(args->mutex);
-						args->keys->push_back(temp2); // vector是线程安全的，不需要额外加锁
-						// pthread_mutex_unlock(args->mutex);
+						keys.push_back(temp2);
 						temp1 = temp1->next;
 					}
 				}
@@ -395,6 +393,10 @@ void* verifyMultiThread(void* ptr) {
 			guessKey[0] = 0;
 		}
 	}
+	// 合并可行密钥
+	pthread_mutex_lock(args->mutex);
+	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
+	pthread_mutex_unlock(args->mutex);
 
 	printf("线程%02d查表完成\n", args->UID);
 
