@@ -472,27 +472,48 @@ void* verifyMultiThread(void* ptr) {
 	}
 	for (long long i = begin; i < end; i++) {
 		Key* nowKey = (* args->keys)[i];
-		u16 k1area1, k1area2, k2area1, k2area2, k2area3, k2area4, k2area5, k2area6;
-		for (k1area1 = 0; k1area1 <= 0b1; k1area1++) {
-			for (k1area2 = 0; k1area2 <= 0b1; k1area2++) {
+		u16 k1area1 = 0, k1area2 = 0, k2area1, k2area2, k2area3, k2area4, k2area5, k2area6;
+		// for (k1area1 = 0; k1area1 <= 0b1; k1area1++) {
+			// for (k1area2 = 0; k1area2 <= 0b1; k1area2++) {
 				for (k2area1 = 0; k2area1 <= 0b1; k2area1++) {
 					for (k2area2 = 0; k2area2 <= 0b11; k2area2++) {
 						for (k2area3 = 0; k2area3 <= 0b1; k2area3++) {
 							for (k2area4 = 0; k2area4 <= 0b111; k2area4++) {
 								for (k2area5 = 0; k2area5 <= 0b1; k2area5++) {
 									for (k2area6 = 0; k2area6 <= 0b1; k2area6++) {
-										guessKey[0] = nowKey->k[0];
-										guessKey[1] = (k1area1 << 13) ^ (k1area1 << 7) ^ nowKey->k[1];
-										guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1) ^ nowKey->k[2];
-										guessKey[3] = nowKey->k[3];
-										Enc(p_verify_now, c_verify_now, guessKey, args->r);
-										if (c_verify_now[0] == args->c_verify1[0] && c_verify_now[1] == args->c_verify1[1]) {
-											temp = (Key*)malloc(sizeof(Key));
-											temp->k[0] = guessKey[0];
-											temp->k[1] = guessKey[1];
-											temp->k[2] = guessKey[2];
-											temp->k[3] = guessKey[3];
-											accurateKeys.push_back(temp);
+										if (args->r <= 10) {
+											for (k1area1 = 0; k1area1 <= 0b1; k1area1++) {
+												for (k1area2 = 0; k1area2 <= 0b1; k1area2++) {
+													guessKey[0] = nowKey->k[0];
+													guessKey[1] = (k1area1 << 13) ^ (k1area1 << 7) ^ nowKey->k[1];
+													guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1) ^ nowKey->k[2];
+													guessKey[3] = nowKey->k[3];
+													Enc(p_verify_now, c_verify_now, guessKey, args->r);
+													if (c_verify_now[0] == args->c_verify1[0] && c_verify_now[1] == args->c_verify1[1]) {
+														temp = (Key*)malloc(sizeof(Key));
+														temp->k[0] = guessKey[0];
+														temp->k[1] = guessKey[1];
+														temp->k[2] = guessKey[2];
+														temp->k[3] = guessKey[3];
+														accurateKeys.push_back(temp);
+													}
+												}
+											}
+										}
+										else {
+											guessKey[0] = nowKey->k[0];
+											guessKey[1] = nowKey->k[1];
+											guessKey[2] = (k2area1 << 15) ^ (k2area2 << 12) ^ (k2area3 << 10) ^ (k2area4 << 6) ^ (k2area5 << 4) ^ (k2area6 << 1) ^ nowKey->k[2];
+											guessKey[3] = nowKey->k[3];
+											Enc(p_verify_now, c_verify_now, guessKey, args->r);
+											if (c_verify_now[0] == args->c_verify1[0] && c_verify_now[1] == args->c_verify1[1]) {
+												temp = (Key*)malloc(sizeof(Key));
+												temp->k[0] = guessKey[0];
+												temp->k[1] = guessKey[1];
+												temp->k[2] = guessKey[2];
+												temp->k[3] = guessKey[3];
+												accurateKeys.push_back(temp);
+											}
 										}
 									}
 								}
@@ -500,8 +521,8 @@ void* verifyMultiThread(void* ptr) {
 						}
 					}
 				}
-			}
-		}
+			// }
+		// }
 	}
 	// 待所有线程使用完args->keys后将其销毁
 	pthread_barrier_wait(args->barrier);
