@@ -499,7 +499,7 @@ void* verifyMultiThread7_10(void* ptr) {
 		guessKey[3] = nowKey->k[3];
 		Enc(p_verify_now2, c_verify_now2, guessKey, args->r);
 		if (c_verify_now2[0] == args->c_verify2[0] && c_verify_now2[1] == args->c_verify2[1]) {
-			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", args->UID, guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
+			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
 		}
 	}
 
@@ -634,7 +634,7 @@ void* verifyMultiThread11_12(void* ptr) {
 		guessKey[3] = nowKey->k[3];
 		Enc(p_verify_now2, c_verify_now2, guessKey, args->r);
 		if (c_verify_now2[0] == args->c_verify2[0] && c_verify_now2[1] == args->c_verify2[1]) {
-			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", args->UID, guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
+			printf("K0:%04x\tK1:%04x\tK2:%04x\tK3:%04x\n", guessKey[0], guessKey[1], guessKey[2], guessKey[3]);
 		}
 	}
 
