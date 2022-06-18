@@ -430,14 +430,6 @@ void* verifyMultiThread7_10(void* ptr) {
 	keys.clear();
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
-	// 释放cAndKeys
-	if (args->UID == 0) {
-		printf("查表完成\n");
-		unordered_map<uint32_t, KeyNode2*>().swap(*(args->cAndKeys));
-#ifdef __linux__
-		malloc_trim(0);
-#endif // __linux__
-	}
 
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
@@ -481,12 +473,6 @@ void* verifyMultiThread7_10(void* ptr) {
 				}
 			}
 		}
-	}
-	// 待所有线程使用完args->keys后将其销毁
-	pthread_barrier_wait(args->barrier);
-	if (args->UID == 0) {
-		vector<Key*>().swap(*(args->keys));
-		printf("第一次验证完成\n");
 	}
 
 	// 第二次验证
@@ -569,14 +555,6 @@ void* verifyMultiThread11_12(void* ptr) {
 	keys.clear();
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
-	// 释放cAndKeys
-	if (args->UID == 0) {
-		printf("查表完成\n");
-		unordered_map<uint32_t, KeyNode2*>().swap(*(args->cAndKeys));
-#ifdef __linux__
-		malloc_trim(0);
-#endif // __linux__
-	}
 
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
@@ -616,12 +594,6 @@ void* verifyMultiThread11_12(void* ptr) {
 				}
 			}
 		}
-	}
-	// 待所有线程使用完args->keys后将其销毁
-	pthread_barrier_wait(args->barrier);
-	if (args->UID == 0) {
-		vector<Key*>().swap(*(args->keys));
-		printf("第一次验证完成\n");
 	}
 
 	// 第二次验证
