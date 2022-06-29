@@ -398,7 +398,8 @@ void* verifyMultiThread7_10(void* ptr) {
 	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
 	u16 area3Bound = 0b1111111 >> threadLength;
-	int key0flag = 0, matchCount = 0;
+	int key0flag = 0;
+	long long matchCount = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
 		for (u16 area2 = 0; area2 <= 0b11111; area2++) {
 			for (u16 area3 = 0; area3 <= area3Bound; area3++) {
@@ -520,7 +521,8 @@ void* verifyMultiThread11_12(void* ptr) {
 	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
 	u16 area3Bound = 0b1111111 >> threadLength;
-	int key0flag = 0, matchCount = 0;
+	int key0flag = 0;
+	long long matchCount = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
 		for (u16 area2 = 0; area2 <= 0b11111; area2++) {
 			for (u16 area3 = 0; area3 <= area3Bound; area3++) {
