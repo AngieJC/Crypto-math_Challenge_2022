@@ -127,6 +127,7 @@ void MITM4()
 	// 查表
 	u16 p2[2], p_verify_now[2] = { 0x1111, 0x1111 }, c_verify_now[2]; // p2是解密2轮后的中间变量
 	i = 0;
+	long long matchCound = 0;
 	uint32_t p2_ = 0; // p2_是p2左右拼接起来
 	printf("------------------------\n");
 	for (guesskey[1] = 0, i = 0; i < 0xffff; guesskey[1]++, i++) {
@@ -135,6 +136,7 @@ void MITM4()
 		memcpy(&p2_, &p2[1], 2);
 		if (cAndKeys.find(p2_) != cAndKeys.end()) {
 			// 命中，验证k0, k1
+			matchCound++;
 			KeyNode* temp = cAndKeys[p2_];
 			while (temp) {
 				guesskey[0] = temp->k;
@@ -196,6 +198,7 @@ void MITM5_6(int r)
 	// 查表
 	vector<Key*> keys;
 	u16 p[2] = { 0x0000, 0x0000 }, c4[2]; // c4是加密4轮后的中间变量
+	long long matchCound = 0;
 	uint32_t c4_ = 0; // c4_是c4左右拼接起来
 	// u16 possibleK0[8] = { 0b0000000000000000, 0b0000000000000010, 0b0000000001000000, 0b0000000001000010, 0b0001000000000010, 0b0001000001000000, 0b0001000001000000, 0b0001000001000010 };
 	u16 possibleK0[8] = { 0b0000000000000000, 0b0000000000001000, 0b0000001000000000, 0b0000001000001000, 0b0100000000000000, 0b0100000000001000, 0b0100001000000000, 0b0100001000001000 };
@@ -209,6 +212,7 @@ void MITM5_6(int r)
 			memcpy(&c4_, &c4[1], 2);
 			if (cAndKeys.find(c4_) != cAndKeys.end()) {
 				// 命中，暂存k0, k1, k2
+				matchCound++;
 				KeyNode* temp1 = cAndKeys[c4_];
 				while (temp1) {
 					Key* temp2 = (Key*)malloc(sizeof(Key));
@@ -221,6 +225,7 @@ void MITM5_6(int r)
 			}
 		}
 	}
+	cout << "匹配成功" << matchCound << "组可能的密钥对" << endl;
 	// 第一次验证
 	u16 p_verify_now[2] = { 0xffff, 0xffff }, c_verify_now[2];
 	vector<Key*> accurateKeys;
@@ -228,6 +233,9 @@ void MITM5_6(int r)
 	for (int i = 0; i < keys.size(); i++) {
 		Key* nowKey = keys[i];
 		u16 area1, area2, area3, area4;
+		// 原本K0中猜测的第1,6,12位比特将未猜测的比特分成了4部分
+		// 分别为第0位，长度为1(area1)；第2至第5位，长度为4(area2)；
+		// 第7至第11位，长度为5(area3)；第13至第15位，长度为3(area4)
 		for (area1 = 0; area1 <= 1; area1++) {
 			for (area2 = 0; area2 <= 0b1111; area2++) {
 				for (area3 = 0; area3 <= 0b11111; area3++) {
@@ -390,7 +398,7 @@ void* verifyMultiThread7_10(void* ptr) {
 	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
 	u16 area3Bound = 0b1111111 >> threadLength;
-	int key0flag = 0;
+	int key0flag = 0, matchCount = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
 		for (u16 area2 = 0; area2 <= 0b11111; area2++) {
 			for (u16 area3 = 0; area3 <= area3Bound; area3++) {
@@ -409,6 +417,7 @@ void* verifyMultiThread7_10(void* ptr) {
 					// 查表
 					if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
 						// 命中，暂存k0, k1, k2, k3
+						matchCount++;
 						KeyNode2* temp1 = (*args->cAndKeys)[c_];
 						while (temp1->next) {
 							Key* temp2 = (Key*)malloc(sizeof(Key));
@@ -424,6 +433,7 @@ void* verifyMultiThread7_10(void* ptr) {
 			}
 		}
 	}
+	printf("线程%d匹配到%lld组可能正确的密钥\n", args->UID, matchCount);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
@@ -510,7 +520,7 @@ void* verifyMultiThread11_12(void* ptr) {
 	// 假定最多有32个线程，那么每个线程需要遍历01*34567*9axxxxx	xxxxx为线程号
 	u16 threadLength = (u16)(log(args->nthreads) / log(2));
 	u16 area3Bound = 0b1111111 >> threadLength;
-	int key0flag = 0;
+	int key0flag = 0, matchCount = 0;
 	for (u16 area1 = 0; area1 <= 0b11; area1++) {
 		for (u16 area2 = 0; area2 <= 0b11111; area2++) {
 			for (u16 area3 = 0; area3 <= area3Bound; area3++) {
@@ -532,6 +542,7 @@ void* verifyMultiThread11_12(void* ptr) {
 							// 查表
 							if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
 								// 命中，暂存k0, k1, k2, k3
+								matchCount++;
 								KeyNode2* temp1 = (*args->cAndKeys)[c_];
 								while (temp1->next) {
 									Key* temp2 = (Key*)malloc(sizeof(Key));
@@ -549,6 +560,7 @@ void* verifyMultiThread11_12(void* ptr) {
 			}
 		}
 	}
+	printf("线程%d匹配到%lld组可能正确的密钥\n", args->UID, matchCount);
 	// 合并可行密钥
 	pthread_mutex_lock(args->mutex);
 	args->keys->insert(args->keys->end(), keys.begin(), keys.end());
