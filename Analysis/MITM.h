@@ -212,9 +212,9 @@ void MITM5_6(int r)
 			memcpy(&c4_, &c4[1], 2);
 			if (cAndKeys.find(c4_) != cAndKeys.end()) {
 				// 命中，暂存k0, k1, k2
-				matchCound++;
 				KeyNode* temp1 = cAndKeys[c4_];
 				while (temp1) {
+					matchCound++;
 					Key* temp2 = (Key*)malloc(sizeof(Key));
 					temp2->k[0] = guesskey[0];
 					temp2->k[1] = guesskey[1];
@@ -418,9 +418,9 @@ void* verifyMultiThread7_10(void* ptr) {
 					// 查表
 					if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
 						// 命中，暂存k0, k1, k2, k3
-						matchCount++;
 						KeyNode2* temp1 = (*args->cAndKeys)[c_];
 						while (temp1->next) {
+							matchCount++;
 							Key* temp2 = (Key*)malloc(sizeof(Key));
 							temp2->k[0] = guessKey[0];
 							temp2->k[1] = guessKey[1];
@@ -544,9 +544,9 @@ void* verifyMultiThread11_12(void* ptr) {
 							// 查表
 							if (args->cAndKeys->find(c_) != args->cAndKeys->end()) {
 								// 命中，暂存k0, k1, k2, k3
-								matchCount++;
 								KeyNode2* temp1 = (*args->cAndKeys)[c_];
 								while (temp1->next) {
+									matchCount++;
 									Key* temp2 = (Key*)malloc(sizeof(Key));
 									temp2->k[0] = guessKey[0];
 									temp2->k[1] = guessKey[1];
