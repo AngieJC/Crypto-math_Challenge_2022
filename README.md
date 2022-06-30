@@ -5,8 +5,6 @@
 4. Decoder：解密应答器
 5. DifferentialCryptanalysis：差分分析，作废
 6. Encoder：加密应答器
-7. 
-8. 
 
 ### 依赖
 1. Gurobi
