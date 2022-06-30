@@ -5,3 +5,9 @@
 4. Decoder：解密应答器
 5. DifferentialCryptanalysis：差分分析，作废
 6. Encoder：加密应答器
+
+#### 依赖
+1. Gurobi
+2. MPI
+3. pthread(Linux内置，Windows需要额外安装)
+4. gurobipy(Python环境)
