@@ -438,7 +438,7 @@ void* verifyMultiThread7_10(void* ptr) {
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
 	if (args->UID == 0) {
-		printf("共匹配到%lld组可行密钥", keys.size());
+		printf("共匹配到%lld组可行密钥\n", args->keys->size());
 	}
 
 	// 第一次验证
@@ -566,7 +566,7 @@ void* verifyMultiThread11_12(void* ptr) {
 	// 待所有线程合并完成后再向下执行
 	pthread_barrier_wait(args->barrier);
 	if (args->UID == 0) {
-		printf("共匹配到%lld组可行密钥", keys.size());
+		printf("共匹配到%lld组可行密钥\n", args->keys->size());
 	}
 
 	// 第一次验证
