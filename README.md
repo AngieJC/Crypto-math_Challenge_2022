@@ -20,6 +20,7 @@
 2. 运行指令：Analysis.exe
 #### Linux
 1. 运行指令：./Analysis
+#### 注意，为提高7-12轮中间相遇攻击速度，加密应答器内置成Analysis的一个Encoder类，如需攻击其他密钥，请修改Encoder类的私有变量Key，在MITM.h第60行
 
 ### 加密应答器Encoder
 * Windows:  Encoder.exe k0 k1 k2 k3 k4 r
