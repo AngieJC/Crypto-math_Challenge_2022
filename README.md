@@ -5,7 +5,6 @@
 4. Decoder：解密应答器
 5. DifferentialCryptanalysis：差分分析，作废
 6. Encoder：加密应答器
-7. MITM_gpu：采用GPU加速的中间相遇攻击，**这是论文提交之后基于兴趣写的，目前还未完成，请不要使用**
 
 ### 依赖
 1. Gurobi
