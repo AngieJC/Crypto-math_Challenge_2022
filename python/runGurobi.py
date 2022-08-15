@@ -13,7 +13,7 @@ for case in range(10):
 
 
 '''
-r = 1
+r = 3
 m=read('Jdiff_' + str(r) + 'r.lp')
 m.setParam("PoolSearchMode", 2)
 m.setParam("PoolSolutions", 2000000000)
